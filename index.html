@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -584,6 +584,19 @@
 
   /* SCROLL */
   .results-scroll { overflow-y: auto; }
+  /* ── LANG SWITCHER ── */
+  .lang-switcher {
+    display: flex; gap: 0.35rem; margin-left: auto; align-items: center;
+  }
+  .lang-btn {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text-dim); font-family: var(--font-mono); font-size: 0.65rem;
+    font-weight: 500; padding: 0.3rem 0.55rem; border-radius: 5px;
+    cursor: pointer; letter-spacing: 0.05em; transition: all 0.15s;
+  }
+  .lang-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .lang-btn.active { background: var(--accent); color: #0e0f14; border-color: var(--accent); font-weight: 700; }
+
 </style>
 </head>
 <body>
@@ -594,7 +607,12 @@
     <h1>Kalkulator<br>Wynagrodzeń <span>UoP</span></h1>
   </div>
   <div>
-    <div class="header-sub">Умова о праце · ZUS + PIT · Полный расчёт</div>
+    <div class="header-sub" id="header-sub">Умова о праце · ZUS + PIT · Полный расчёт</div>
+  </div>
+  <div class="lang-switcher">
+    <button class="lang-btn active" onclick="setLang('RU')">RU</button>
+    <button class="lang-btn"        onclick="setLang('EN')">EN</button>
+    <button class="lang-btn"        onclick="setLang('PL')">PL</button>
   </div>
 </div>
 
@@ -603,11 +621,11 @@
   <!-- LEFT: INPUTS -->
   <div>
     <div class="panel" style="margin-bottom:1rem">
-      <div class="panel-title">Режим ввода</div>
+      <div class="panel-title" id="pt-mode">Режим ввода</div>
       <div class="panel-body">
         <div class="mode-toggle">
-          <button class="mode-btn active" id="btn-brutto" onclick="setMode('brutto')">Брутто работника</button>
-          <button class="mode-btn" id="btn-employer" onclick="setMode('employer')">Полная стоим. найма</button>
+          <button class="mode-btn active" id="btn-brutto" onclick="setMode('brutto')" data-i18n="modeBrutto">Брутто работника</button>
+          <button class="mode-btn" id="btn-employer" onclick="setMode('employer')" data-i18n="modeEmployer">Полная стоим. найма</button>
         </div>
 
         <div class="field">
@@ -622,18 +640,18 @@
     </div>
 
     <div class="panel">
-      <div class="panel-title">Льготы и параметры</div>
+      <div class="panel-title" id="pt-options">Льготы и параметры</div>
       <div class="panel-body">
 
-        <div class="section-label">Налоговые льготы (PIT)</div>
+        <div class="section-label" id="sl-pit">Налоговые льготы (PIT)</div>
         <div class="check-group">
 
           <label class="check-item" id="ci-pit0" onclick="toggleCheck('pit0')">
             <input type="checkbox" id="pit0">
             <div class="check-box"></div>
             <div class="check-text">
-              <div class="check-name">Zerowy PIT — до 26 лет</div>
-              <div class="check-desc">Освобождение от PIT при доходе до 85 528 zł/год</div>
+              <div class="check-name" id="cn-pit0">Zerowy PIT — до 26 лет</div>
+              <div class="check-desc" id="cd-pit0">Освобождение от PIT при доходе до 85 528 zł/год</div>
             </div>
           </label>
 
@@ -641,8 +659,8 @@
             <input type="checkbox" id="joint">
             <div class="check-box"></div>
             <div class="check-text">
-              <div class="check-name">Совместный PIT с супругом/супругой</div>
-              <div class="check-desc">Применяется 1-й порог (12%) дольше за счёт усреднения дохода</div>
+              <div class="check-name" id="cn-joint">Совместный PIT с супругом/супругой</div>
+              <div class="check-desc" id="cd-joint">Применяется 1-й порог (12%) дольше за счёт усреднения дохода</div>
             </div>
           </label>
 
@@ -650,15 +668,15 @@
             <input type="checkbox" id="autor">
             <div class="check-box"></div>
             <div class="check-text">
-              <div class="check-name">Авторские расходы (honorarium autorskie)</div>
-              <div class="check-desc">KUP % от авторской части вместо стандартных 250 zł/мес (лимит 120 000 zł/год)</div>
+              <div class="check-name" id="cn-autor">Авторские расходы (honorarium autorskie)</div>
+              <div class="check-desc" id="cd-autor">KUP % от авторской части вместо стандартных 250 zł/мес (лимит 120 000 zł/год)</div>
             </div>
           </label>
 
           <div class="subfield" id="sf-autor">
             <div style="display:flex;gap:1rem;flex-wrap:wrap">
               <div>
-                <label>Ставка KUP от авторской части (%)</label>
+                <label id="lbl-kuprate">Ставка KUP от авторской части (%)</label>
                 <div style="display:flex;align-items:center;gap:0.4rem">
                   <input type="number" id="autor-kup-rate" value="50" min="1" max="100" step="1" oninput="autoCalc()">
                   <div style="display:flex;gap:0.3rem">
@@ -668,7 +686,7 @@
                 </div>
               </div>
               <div>
-                <label>Доля авторской части от брутто (%)</label>
+                <label id="lbl-autorpct">Доля авторской части от брутто (%)</label>
                 <input type="number" id="autor-pct" value="100" min="1" max="100" oninput="autoCalc()">
               </div>
             </div>
@@ -678,8 +696,8 @@
             <input type="checkbox" id="kupdoj">
             <div class="check-box"></div>
             <div class="check-text">
-              <div class="check-name">Повышенные расходы (доп. место работы)</div>
-              <div class="check-desc">KUP = 300 zł/мес вместо 250 zł (другой населённый пункт)</div>
+              <div class="check-name" id="cn-kupdoj">Повышенные расходы (доп. место работы)</div>
+              <div class="check-desc" id="cd-kupdoj">KUP = 300 zł/мес вместо 250 zł (другой населённый пункт)</div>
             </div>
           </label>
 
@@ -687,39 +705,39 @@
             <input type="checkbox" id="pit2" checked>
             <div class="check-box"></div>
             <div class="check-text">
-              <div class="check-name">Залог PIT-2 (квота свободная от налога)</div>
-              <div class="check-desc">Квота 30 000 zł/год учитывается в авансах ежемесячно (−300 zł/мес), а не только в годовой декларации</div>
+              <div class="check-name" id="cn-pit2">Залог PIT-2 (квота свободная от налога)</div>
+              <div class="check-desc" id="cd-pit2">Квота 30 000 zł/год учитывается в авансах ежемесячно (−300 zł/мес), а не только в годовой декларации</div>
             </div>
           </label>
 
         </div>
 
-        <div class="section-label">Взносы ZUS</div>
+        <div class="section-label" id="sl-zus">Взносы ZUS</div>
         <div class="check-group">
 
           <label class="check-item" id="ci-ppk" onclick="toggleCheck('ppk')">
             <input type="checkbox" id="ppk">
             <div class="check-box"></div>
             <div class="check-text">
-              <div class="check-name">Участие в PPK</div>
-              <div class="check-desc">Работодатель +1,5%, работник +2% от брутто</div>
+              <div class="check-name" id="cn-ppk">Участие в PPK</div>
+              <div class="check-desc" id="cd-ppk">Работодатель +1,5%, работник +2% от брутто</div>
             </div>
           </label>
 
         </div>
 
-        <div class="section-label">Параметры</div>
+        <div class="section-label" id="sl-params">Параметры</div>
         <div class="field">
-          <label>Ставка несчастного страхования (wypadkowe)</label>
+          <label id="lbl-wyp">Ставка несчастного страхования (wypadkowe)</label>
           <div class="field-row">
             <input type="number" id="wyp-rate" value="1.67" min="0.67" max="3.33" step="0.01" oninput="autoCalc()">
             <span class="field-unit">%</span>
           </div>
-          <div class="field-hint">Стандарт: 1,67%. Зависит от отрасли и размера фирмы</div>
+          <div class="field-hint" id="hint-wyp">Стандарт: 1,67%. Зависит от отрасли и размера фирмы</div>
         </div>
 
         <div class="field">
-          <label>Доход супруга/супруги (год, для совм. PIT)</label>
+          <label id="lbl-spouse">Доход супруга/супруги (год, для совм. PIT)</label>
           <div class="field-row">
             <input type="number" id="spouse-income" value="0" min="0" step="1000" oninput="autoCalc()">
             <span class="field-unit">zł</span>
@@ -727,18 +745,18 @@
           <div class="field-hint" id="spouse-hint">Заполните при выборе совместного PIT</div>
         </div>
 
-        <button class="calc-btn" onclick="calculate()">⟶ Рассчитать</button>
+        <button class="calc-btn" onclick="calculate()" id="calc-btn">⟶ Рассчитать</button>
       </div>
     </div>
   </div>
 
   <!-- RIGHT: RESULTS -->
   <div id="results-panel" class="panel results-scroll">
-    <div class="panel-title">Результаты расчёта</div>
+    <div class="panel-title" id="pt-results">Результаты расчёта</div>
     <div class="panel-body" id="results-body">
       <div class="results-placeholder">
         <div class="placeholder-icon">⟶</div>
-        <div>Введите зарплату и нажмите<br>«Рассчитать»</div>
+        <div id="placeholder-text">Введите зарплату и нажмите<br>«Рассчитать»</div>
       </div>
     </div>
   </div>
@@ -746,22 +764,450 @@
 </div>
 
 <script>
+// ═══════════════════════════════════════════════════════
+// i18n — Локализация / Localisation / Lokalizacja
+// ═══════════════════════════════════════════════════════
+let LANG = 'RU';
+
+const I18N = {
+  RU: {
+    headerSub:      'Умова о праце · ZUS + PIT · Полный расчёт',
+    ptMode:         'Режим ввода',
+    ptOptions:      'Льготы и параметры',
+    ptResults:      'Результаты расчёта',
+    modeBrutto:     'Брутто работника',
+    modeEmployer:   'Полная стоим. найма',
+    inputLabelB:    'Зарплата брутто (месяц)',
+    inputHintB:     'Сумма, указанная в трудовом договоре',
+    inputLabelE:    'Полная стоимость найма (месяц)',
+    inputHintE:     'Общие расходы работодателя, включая его взносы ZUS',
+    slPit:          'Налоговые льготы (PIT)',
+    slZus:          'Взносы ZUS',
+    slParams:       'Параметры',
+    cnPit0:         'Zerowy PIT — до 26 лет',
+    cdPit0:         'Освобождение от PIT при доходе до 85 528 zł/год',
+    cnJoint:        'Совместный PIT с супругом/супругой',
+    cdJoint:        'Применяется 1-й порог (12%) дольше за счёт усреднения дохода',
+    cnAutor:        'Авторские расходы (honorarium autorskie)',
+    cdAutor:        'KUP % от авторской части вместо стандартных 250 zł/мес (лимит 120 000 zł/год)',
+    lblKuprate:     'Ставка KUP от авторской части (%)',
+    lblAutorpct:    'Доля авторской части от брутто (%)',
+    cnKupdoj:       'Повышенные расходы (доп. место работы)',
+    cdKupdoj:       'KUP = 300 zł/мес вместо 250 zł (другой населённый пункт)',
+    cnPit2:         'Залог PIT-2 (квота свободная от налога)',
+    cdPit2:         'Квота 30 000 zł/год учитывается в авансах ежемесячно (−300 zł/мес), а не только в годовой декларации',
+    cnPpk:          'Участие в PPK',
+    cdPpk:          'Работодатель +1,5%, работник +2% от брутто',
+    lblWyp:         'Ставка несчастного страхования (wypadkowe)',
+    hintWyp:        'Стандарт: 1,67%. Зависит от отрасли и размера фирмы',
+    lblSpouse:      'Доход супруга/супруги (год, для совм. PIT)',
+    spouseHint:     'Заполните при выборе совместного PIT',
+    calcBtn:        '⟶ Рассчитать',
+    placeholderTxt: 'Введите зарплату и нажмите<br>«Рассчитать»',
+    months: ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'],
+    monthsShort: ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'],
+    // results
+    cardNettoMon:   'Нетто / мес (среднее)',
+    cardNettoSub:   'На руки (после декларации)',
+    cardCostMon:    'Полная стоимость / мес (среднее)',
+    cardCostSub:    'Расходы работодателя',
+    cardNettoYr:    'Нетто / год',
+    cardNettoYrSub: 'Итого за год (после декларации)',
+    cardCostYr:     'Полная стоимость / год',
+    cardCostYrSub:  'Расходы работодателя за год',
+    effTitle:       'Эффективные ставки (от брутто работника)',
+    effPit:         'Налог PIT',
+    effZus:         'ZUS + медицинский (работник)',
+    effWorker:      'Всего с работника (от брутто)',
+    effTotal:       'Всего (от стоим. найма)',
+    empHeader:      'Взносы работодателя / мес',
+    empPension:     'Пенсионное (emerytalne)',
+    empRent:        'Рентное (rentowe)',
+    empAccident:    'Несчастные случаи (wypadkowe)',
+    empFP:          'Фонд труда (FP + FS)',
+    empFPLow:       '< мин. зарплата',
+    empTotal:       'Итого взносов (сверх брутто)',
+    empTotalCost:   '= Полная стоимость найма',
+    ewHeader:       'Удержания с работника — ',
+    ewBrutto:       'Брутто (по договору)',
+    ewPension:      '− Пенсионное (работник)',
+    ewRent:         '− Рентное (работник)',
+    ewSick:         '− Больничное (chorobowe)',
+    ewHealth:       '− Медицинское (zdrowotne)',
+    ewPpk:          '− PPK (работник)',
+    ewKup:          'Расходы на доход (KUP)',
+    ewPit:          '− Аванс PIT',
+    ewNetto:        '= Нетто (на руки)',
+    pitDetailTitle: 'Подробный расчёт аванса PIT',
+    pitZeroOk:      '✓ Zerowy PIT — доход в пределах лимита 85 528 zł/год',
+    pitZeroUsed:    'Использовано лимита до этого месяца',
+    pitZeroRem:     'Остаток лимита после этого месяца',
+    pitZeroExc:     '⚠ Лимит Zerowy PIT превышен (85 528 zł/год)',
+    pitTaxBase:     'Налогооблагаемая база месяца',
+    pitExemptRem:   '− Остаток освобождения (до лимита)',
+    pitTaxableBase: '= Облагаемая база (сверх лимита)',
+    pitAnnualScale: '× 12 → годовая база для ставки',
+    pitMonthTax:    'Налог по шкале (год) ÷ 12',
+    pitAdvance:     '= Аванс PIT к уплате',
+    pitAdvanceMon:  '= Аванс PIT к уплате (мес)',
+    pitRounded:     'округл. до zł',
+    pitBrutto:      'Брутто',
+    pitZusSoc:      '− Взносы ZUS (соц. часть работника)',
+    pitKup:         '− KUP (расходы на получение дохода)',
+    pitBaseRound:   '= Налогооблагаемая база (мес)',
+    pitPrevBase:    'База с начала года без этого месяца',
+    pitYtdBase:     'База с начала года включая этот месяц',
+    pitSpouseYtd:   '+ Доход супруга/супруги (с нач. года)',
+    pitHalf:        '÷ 2 → половина суммарного',
+    pitScale:       'Шкала нарастающим итогом: до 30 000 zł — 0%, 30 000–120 000 — 12%, свыше 120 000 — 32%',
+    pitFreeQuota:   'Квота свободная от налога (с нач. года)',
+    pitFreeAll:     'Весь доход с нач. года — в квоте 0% (до 30 000 zł)',
+    pitBracket12:   'Часть по ставке 12% (с нач. года)',
+    pitBracket32:   'Часть по ставке 32% (с нач. года)',
+    pitYtdTaxJoint: 'Налог с начала года на половину × 2',
+    pitYtdTax:      'Налог с начала года по шкале',
+    pitPrevTax:     '− Налог с нач. года без этого месяца',
+    pitDiff:        '= Налог за этот месяц (разница)',
+    pit2Applied:    '− PIT-2: квота 30 000 zł распределена по месяцам',
+    pit2NotFiled:   'PIT-2 не подан — квота учтётся в годовой декларации',
+    annualTitle:    'Помесячный расчёт — весь год',
+    annualZusNote:  '★ = лимит ZUS достигнут',
+    tblMonth:       'Месяц',
+    tblBrutto:      'Брутто',
+    tblZus:         'ZUS работника',
+    tblHealth:      'Мед. взнос',
+    tblPit:         'PIT',
+    tblNetto:       'Нетто',
+    tblCost:        'Стоим. найма',
+    tblTotal:       'ИТОГО / год',
+    annEmpHeader:   'Взносы работодателя — ИТОГО ЗА ГОД',
+    annEmpPension:  'Пенсионное',
+    annEmpRent:     'Рентное',
+    annEmpAccident: 'Несчастные случаи',
+    annEmpFP:       'Фонд труда (FP+FS)',
+    annBrutto:      'Брутто за год',
+    annTotalCost:   'Полная стоимость найма за год',
+    noteZerowy:     (r) => `<strong>Zerowy PIT:</strong> применено освобождение от налога для лиц до 26 лет.`,
+    noteJoint:      (r) => `<strong>Совместный PIT:</strong> расчёт усреднён с доходом супруга/супруги (${r.spouseFmt}/год). Точный годовой расчёт зависит от декларации PIT-37.${r.pit0 ? ' При активном Zerowy PIT ваш доход освобождён от налога — совместная декларация влияет только на расчёт налога супруга/супруги.' : ''}`,
+    noteAutor:      (r) => `<strong>Авторские расходы KUP ${r.kupPct}%:</strong> KUP = ${r.kupPct}% от авторской части (${r.autorPct}% брутто). Годовой лимит авторских KUP — 120 000 zł.`,
+    notePpk:        (r) => `<strong>PPK:</strong> работодатель +1,5%, работник +2% от брутто. Взносы PPK не облагаются PIT на стадии взноса.`,
+    noteZusLimit:   (r) => `<strong>Лимит ZUS 282 600 zł</strong> учитывается автоматически: после превышения пенсионный (9,76%+9,76%) и рентный (6,5%+1,5%) взносы не начисляются.`,
+    noteDisclaimer: (r) => `Расчёт является приблизительным. Ставка больничного страхования: стандартная. Для точного расчёта используйте официальный калькулятор ZUS и консультируйтесь с бухгалтером.`,
+  },
+  EN: {
+    headerSub:      'Employment contract · ZUS + PIT · Full breakdown',
+    ptMode:         'Input mode',
+    ptOptions:      'Benefits & parameters',
+    ptResults:      'Calculation results',
+    modeBrutto:     'Employee gross',
+    modeEmployer:   'Total employment cost',
+    inputLabelB:    'Gross salary (monthly)',
+    inputHintB:     'Amount stated in the employment contract',
+    inputLabelE:    'Total employment cost (monthly)',
+    inputHintE:     'Total employer expenditure including ZUS contributions',
+    slPit:          'Tax reliefs (PIT)',
+    slZus:          'ZUS contributions',
+    slParams:       'Parameters',
+    cnPit0:         'Zerowy PIT — under 26',
+    cdPit0:         'PIT exemption for income up to 85,528 zł/year',
+    cnJoint:        'Joint PIT with spouse',
+    cdJoint:        'Lower 12% bracket applies longer due to income averaging',
+    cnAutor:        'Author\'s expenses (honorarium autorskie)',
+    cdAutor:        'KUP % of author\'s part instead of standard 250 zł/mo (limit 120,000 zł/yr)',
+    lblKuprate:     'KUP rate on author\'s part (%)',
+    lblAutorpct:    'Author\'s share of gross (%)',
+    cnKupdoj:       'Increased costs (additional workplace)',
+    cdKupdoj:       'KUP = 300 zł/mo instead of 250 zł (different locality)',
+    cnPit2:         'PIT-2 declaration (tax-free allowance)',
+    cdPit2:         '30,000 zł/yr allowance applied monthly in advances (−300 zł/mo)',
+    cnPpk:          'PPK participation',
+    cdPpk:          'Employer +1.5%, employee +2% of gross',
+    lblWyp:         'Accident insurance rate (wypadkowe)',
+    hintWyp:        'Standard: 1.67%. Depends on industry and company size',
+    lblSpouse:      'Spouse income (annual, for joint PIT)',
+    spouseHint:     'Fill in when joint PIT is selected',
+    calcBtn:        '⟶ Calculate',
+    placeholderTxt: 'Enter salary and click<br>"Calculate"',
+    months: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+    monthsShort: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    cardNettoMon:   'Net / month (avg)',
+    cardNettoSub:   'Take-home (after tax return)',
+    cardCostMon:    'Total cost / month (avg)',
+    cardCostSub:    'Employer expenditure',
+    cardNettoYr:    'Net / year',
+    cardNettoYrSub: 'Annual total (after tax return)',
+    cardCostYr:     'Total cost / year',
+    cardCostYrSub:  'Employer expenditure per year',
+    effTitle:       'Effective rates (on employee gross)',
+    effPit:         'PIT tax',
+    effZus:         'ZUS + health (employee)',
+    effWorker:      'Total from employee (of gross)',
+    effTotal:       'Total (of employment cost)',
+    empHeader:      'Employer contributions / month',
+    empPension:     'Pension (emerytalne)',
+    empRent:        'Disability (rentowe)',
+    empAccident:    'Accident (wypadkowe)',
+    empFP:          'Labour Fund (FP + FS)',
+    empFPLow:       '< min. wage',
+    empTotal:       'Total contributions (on top of gross)',
+    empTotalCost:   '= Total employment cost',
+    ewHeader:       'Employee deductions — ',
+    ewBrutto:       'Gross (per contract)',
+    ewPension:      '− Pension (employee)',
+    ewRent:         '− Disability (employee)',
+    ewSick:         '− Sickness (chorobowe)',
+    ewHealth:       '− Health insurance (zdrowotne)',
+    ewPpk:          '− PPK (employee)',
+    ewKup:          'Tax-deductible costs (KUP)',
+    ewPit:          '− PIT advance',
+    ewNetto:        '= Net (take-home)',
+    pitDetailTitle: 'PIT advance — detailed breakdown',
+    pitZeroOk:      '✓ Zerowy PIT — income within 85,528 zł/yr limit',
+    pitZeroUsed:    'Limit used before this month',
+    pitZeroRem:     'Limit remaining after this month',
+    pitZeroExc:     '⚠ Zerowy PIT limit exceeded (85,528 zł/yr)',
+    pitTaxBase:     'Monthly taxable base',
+    pitExemptRem:   '− Remaining exemption (within limit)',
+    pitTaxableBase: '= Taxable base (above limit)',
+    pitAnnualScale: '× 12 → annual base for bracket',
+    pitMonthTax:    'Tax per scale (annual) ÷ 12',
+    pitAdvance:     '= PIT advance due',
+    pitAdvanceMon:  '= PIT advance due (month)',
+    pitRounded:     'rounded to zł',
+    pitBrutto:      'Gross',
+    pitZusSoc:      '− ZUS social contributions (employee)',
+    pitKup:         '− KUP (tax-deductible costs)',
+    pitBaseRound:   '= Taxable base (month)',
+    pitPrevBase:    'YTD base excluding this month',
+    pitYtdBase:     'YTD base including this month',
+    pitSpouseYtd:   '+ Spouse income (YTD)',
+    pitHalf:        '÷ 2 → half of combined YTD',
+    pitScale:       'Progressive scale: up to 30,000 zł — 0%, 30,000–120,000 — 12%, above 120,000 — 32%',
+    pitFreeQuota:   'Tax-free allowance (YTD)',
+    pitFreeAll:     'All YTD income in 0% bracket (up to 30,000 zł)',
+    pitBracket12:   '12% bracket portion (YTD)',
+    pitBracket32:   '32% bracket portion (YTD)',
+    pitYtdTaxJoint: 'YTD tax on half × 2',
+    pitYtdTax:      'YTD tax per scale',
+    pitPrevTax:     '− YTD tax excluding this month',
+    pitDiff:        '= Tax for this month (difference)',
+    pit2Applied:    '− PIT-2: 30,000 zł allowance spread monthly',
+    pit2NotFiled:   'PIT-2 not filed — allowance applied in annual return',
+    annualTitle:    'Month-by-month breakdown — full year',
+    annualZusNote:  '★ = ZUS limit reached',
+    tblMonth:       'Month',
+    tblBrutto:      'Gross',
+    tblZus:         'Employee ZUS',
+    tblHealth:      'Health ins.',
+    tblPit:         'PIT',
+    tblNetto:       'Net',
+    tblCost:        'Empl. cost',
+    tblTotal:       'TOTAL / year',
+    annEmpHeader:   'Employer contributions — ANNUAL TOTAL',
+    annEmpPension:  'Pension',
+    annEmpRent:     'Disability',
+    annEmpAccident: 'Accident',
+    annEmpFP:       'Labour Fund (FP+FS)',
+    annBrutto:      'Annual gross',
+    annTotalCost:   'Total annual employment cost',
+    noteZerowy:     (r) => `<strong>Zerowy PIT:</strong> tax exemption applied for persons under 26.`,
+    noteJoint:      (r) => `<strong>Joint PIT:</strong> calculation averaged with spouse income (${r.spouseFmt}/yr). Final annual result depends on PIT-37 return.${r.pit0 ? ' With active Zerowy PIT your income is exempt — joint filing affects only the spouse\'s tax.' : ''}`,
+    noteAutor:      (r) => `<strong>Author\'s costs KUP ${r.kupPct}%:</strong> KUP = ${r.kupPct}% of the author\'s portion (${r.autorPct}% of gross). Annual KUP limit — 120,000 zł.`,
+    notePpk:        (r) => `<strong>PPK:</strong> employer +1.5%, employee +2% of gross. PPK contributions are not subject to PIT at contribution stage.`,
+    noteZusLimit:   (r) => `<strong>ZUS limit 282,600 zł</strong> is applied automatically: pension (9.76%+9.76%) and disability (6.5%+1.5%) contributions cease after the limit is reached.`,
+    noteDisclaimer: (r) => `This calculation is approximate. Accident insurance rate: standard. For exact figures use the official ZUS calculator and consult an accountant.`,
+  },
+  PL: {
+    headerSub:      'Umowa o pracę · ZUS + PIT · Pełne wyliczenie',
+    ptMode:         'Tryb wprowadzania',
+    ptOptions:      'Ulgi i parametry',
+    ptResults:      'Wyniki kalkulacji',
+    modeBrutto:     'Brutto pracownika',
+    modeEmployer:   'Całkowity koszt zatrudnienia',
+    inputLabelB:    'Wynagrodzenie brutto (miesięcznie)',
+    inputHintB:     'Kwota wskazana w umowie o pracę',
+    inputLabelE:    'Całkowity koszt zatrudnienia (miesięcznie)',
+    inputHintE:     'Całkowite wydatki pracodawcy wraz ze składkami ZUS',
+    slPit:          'Ulgi podatkowe (PIT)',
+    slZus:          'Składki ZUS',
+    slParams:       'Parametry',
+    cnPit0:         'Zerowy PIT — do 26. roku życia',
+    cdPit0:         'Zwolnienie z PIT przy dochodzie do 85 528 zł/rok',
+    cnJoint:        'Wspólne rozliczenie PIT z małżonkiem',
+    cdJoint:        'Niższa stawka 12% obowiązuje dłużej dzięki uśrednieniu dochodów',
+    cnAutor:        'Koszty autorskie (honorarium autorskie)',
+    cdAutor:        'KUP % od części autorskiej zamiast standardowych 250 zł/mies. (limit 120 000 zł/rok)',
+    lblKuprate:     'Stawka KUP od części autorskiej (%)',
+    lblAutorpct:    'Udział części autorskiej w brutto (%)',
+    cnKupdoj:       'Podwyższone koszty (dodatkowe miejsce pracy)',
+    cdKupdoj:       'KUP = 300 zł/mies. zamiast 250 zł (inna miejscowość)',
+    cnPit2:         'Oświadczenie PIT-2 (kwota wolna od podatku)',
+    cdPit2:         'Kwota 30 000 zł/rok uwzględniana w zaliczkach co miesiąc (−300 zł/mies.)',
+    cnPpk:          'Uczestnictwo w PPK',
+    cdPpk:          'Pracodawca +1,5%, pracownik +2% od brutto',
+    lblWyp:         'Stopa ubezpieczenia wypadkowego',
+    hintWyp:        'Standardowa: 1,67%. Zależy od branży i wielkości firmy',
+    lblSpouse:      'Dochód małżonka (roczny, do wspólnego PIT)',
+    spouseHint:     'Wypełnij przy wyborze wspólnego rozliczenia PIT',
+    calcBtn:        '⟶ Oblicz',
+    placeholderTxt: 'Wprowadź wynagrodzenie i kliknij<br>„Oblicz"',
+    months: ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'],
+    monthsShort: ['Sty','Lut','Mar','Kwi','Maj','Cze','Lip','Sie','Wrz','Paź','Lis','Gru'],
+    cardNettoMon:   'Netto / mies. (średnia)',
+    cardNettoSub:   'Na rękę (po rozliczeniu)',
+    cardCostMon:    'Całkowity koszt / mies. (średnia)',
+    cardCostSub:    'Koszty pracodawcy',
+    cardNettoYr:    'Netto / rok',
+    cardNettoYrSub: 'Łącznie za rok (po rozliczeniu)',
+    cardCostYr:     'Całkowity koszt / rok',
+    cardCostYrSub:  'Koszty pracodawcy za rok',
+    effTitle:       'Efektywne stawki (od brutto pracownika)',
+    effPit:         'Podatek PIT',
+    effZus:         'ZUS + zdrowotne (pracownik)',
+    effWorker:      'Łącznie od pracownika (od brutto)',
+    effTotal:       'Łącznie (od kosztu zatrudnienia)',
+    empHeader:      'Składki pracodawcy / mies.',
+    empPension:     'Emerytalne',
+    empRent:        'Rentowe',
+    empAccident:    'Wypadkowe',
+    empFP:          'Fundusz Pracy (FP + FS)',
+    empFPLow:       '< min. wynagrodzenie',
+    empTotal:       'Łącznie składek (ponad brutto)',
+    empTotalCost:   '= Całkowity koszt zatrudnienia',
+    ewHeader:       'Potrącenia pracownika — ',
+    ewBrutto:       'Brutto (umowne)',
+    ewPension:      '− Emerytalne (pracownik)',
+    ewRent:         '− Rentowe (pracownik)',
+    ewSick:         '− Chorobowe',
+    ewHealth:       '− Zdrowotne',
+    ewPpk:          '− PPK (pracownik)',
+    ewKup:          'Koszty uzyskania przychodu (KUP)',
+    ewPit:          '− Zaliczka PIT',
+    ewNetto:        '= Netto (na rękę)',
+    pitDetailTitle: 'Szczegółowe wyliczenie zaliczki PIT',
+    pitZeroOk:      '✓ Zerowy PIT — dochód w granicach limitu 85 528 zł/rok',
+    pitZeroUsed:    'Wykorzystany limit przed tym miesiącem',
+    pitZeroRem:     'Pozostały limit po tym miesiącu',
+    pitZeroExc:     '⚠ Przekroczono limit Zerowego PIT (85 528 zł/rok)',
+    pitTaxBase:     'Podstawa opodatkowania miesiąca',
+    pitExemptRem:   '− Pozostałe zwolnienie (do limitu)',
+    pitTaxableBase: '= Podstawa opodatkowania (ponad limit)',
+    pitAnnualScale: '× 12 → roczna podstawa dla stawki',
+    pitMonthTax:    'Podatek wg skali (rocznie) ÷ 12',
+    pitAdvance:     '= Zaliczka PIT do zapłaty',
+    pitAdvanceMon:  '= Zaliczka PIT do zapłaty (mies.)',
+    pitRounded:     'zaokr. do zł',
+    pitBrutto:      'Brutto',
+    pitZusSoc:      '− Składki ZUS (społeczne pracownika)',
+    pitKup:         '− KUP (koszty uzyskania przychodu)',
+    pitBaseRound:   '= Podstawa opodatkowania (mies.)',
+    pitPrevBase:    'Podstawa narastająco bez tego miesiąca',
+    pitYtdBase:     'Podstawa narastająco z tym miesiącem',
+    pitSpouseYtd:   '+ Dochód małżonka (narastająco)',
+    pitHalf:        '÷ 2 → połowa łącznego dochodu narastająco',
+    pitScale:       'Skala narastająco: do 30 000 zł — 0%, 30 000–120 000 — 12%, powyżej 120 000 — 32%',
+    pitFreeQuota:   'Kwota wolna od podatku (narastająco)',
+    pitFreeAll:     'Cały dochód narastająco w kwocie wolnej (do 30 000 zł)',
+    pitBracket12:   'Część wg stawki 12% (narastająco)',
+    pitBracket32:   'Część wg stawki 32% (narastająco)',
+    pitYtdTaxJoint: 'Podatek narastająco od połowy × 2',
+    pitYtdTax:      'Podatek narastająco wg skali',
+    pitPrevTax:     '− Podatek narastająco bez tego miesiąca',
+    pitDiff:        '= Podatek za ten miesiąc (różnica)',
+    pit2Applied:    '− PIT-2: kwota 30 000 zł rozłożona na miesiące',
+    pit2NotFiled:   'Brak PIT-2 — kwota uwzględniona w rocznym zeznaniu',
+    annualTitle:    'Rozliczenie miesięczne — cały rok',
+    annualZusNote:  '★ = osiągnięto limit ZUS',
+    tblMonth:       'Miesiąc',
+    tblBrutto:      'Brutto',
+    tblZus:         'ZUS pracownika',
+    tblHealth:      'Zdrowotne',
+    tblPit:         'PIT',
+    tblNetto:       'Netto',
+    tblCost:        'Koszt zatrudn.',
+    tblTotal:       'ŁĄCZNIE / rok',
+    annEmpHeader:   'Składki pracodawcy — ŁĄCZNIE ZA ROK',
+    annEmpPension:  'Emerytalne',
+    annEmpRent:     'Rentowe',
+    annEmpAccident: 'Wypadkowe',
+    annEmpFP:       'Fundusz Pracy (FP+FS)',
+    annBrutto:      'Brutto za rok',
+    annTotalCost:   'Całkowity koszt zatrudnienia za rok',
+    noteZerowy:     (r) => `<strong>Zerowy PIT:</strong> zastosowano zwolnienie podatkowe dla osób do 26. roku życia.`,
+    noteJoint:      (r) => `<strong>Wspólne rozliczenie PIT:</strong> obliczenie uśrednione z dochodem małżonka (${r.spouseFmt}/rok). Dokładny wynik roczny zależy od deklaracji PIT-37.${r.pit0 ? ' Przy aktywnym Zerowym PIT Twój dochód jest zwolniony — wspólne rozliczenie wpływa tylko na podatek małżonka.' : ''}`,
+    noteAutor:      (r) => `<strong>Koszty autorskie KUP ${r.kupPct}%:</strong> KUP = ${r.kupPct}% od części autorskiej (${r.autorPct}% brutto). Roczny limit KUP autorskich — 120 000 zł.`,
+    notePpk:        (r) => `<strong>PPK:</strong> pracodawca +1,5%, pracownik +2% od brutto. Składki PPK nie podlegają PIT na etapie wpłaty.`,
+    noteZusLimit:   (r) => `<strong>Limit ZUS 282 600 zł</strong> uwzględniany automatycznie: po przekroczeniu składki emerytalne (9,76%+9,76%) i rentowe (6,5%+1,5%) nie są naliczane.`,
+    noteDisclaimer: (r) => `Kalkulacja ma charakter szacunkowy. Stopa składki wypadkowej: standardowa. W celu uzyskania dokładnych wyników skorzystaj z oficjalnego kalkulatora ZUS i skonsultuj się z księgowym.`,
+  },
+};
+
+function t(key) { return I18N[LANG][key] || key; }
+
+function setLang(lang) {
+  LANG = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.trim() === lang);
+  });
+  document.documentElement.lang = {RU:'ru', EN:'en', PL:'pl'}[lang];
+  applyLang();
+  if (window._calcMonths) calculate();
+}
+
+function applyLang() {
+  const L = I18N[LANG];
+  const s = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
+  const st = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+  s('header-sub',      L.headerSub);
+  st('pt-mode',        L.ptMode);
+  st('pt-options',     L.ptOptions);
+  st('pt-results',     L.ptResults);
+  st('btn-brutto',     L.modeBrutto);
+  st('btn-employer',   L.modeEmployer);
+  st('sl-pit',         L.slPit);
+  st('sl-zus',         L.slZus);
+  st('sl-params',      L.slParams);
+  st('cn-pit0',        L.cnPit0);
+  st('cd-pit0',        L.cdPit0);
+  st('cn-joint',       L.cnJoint);
+  st('cd-joint',       L.cdJoint);
+  st('cn-autor',       L.cnAutor);
+  st('cd-autor',       L.cdAutor);
+  st('lbl-kuprate',    L.lblKuprate);
+  st('lbl-autorpct',   L.lblAutorpct);
+  st('cn-kupdoj',      L.cnKupdoj);
+  st('cd-kupdoj',      L.cdKupdoj);
+  st('cn-pit2',        L.cnPit2);
+  st('cd-pit2',        L.cdPit2);
+  st('cn-ppk',         L.cnPpk);
+  st('cd-ppk',         L.cdPpk);
+  st('lbl-wyp',        L.lblWyp);
+  st('hint-wyp',       L.hintWyp);
+  st('lbl-spouse',     L.lblSpouse);
+  st('spouse-hint',    L.spouseHint);
+  st('calc-btn',       L.calcBtn);
+  s ('placeholder-text', L.placeholderTxt);
+  // update input label/hint based on current mode
+  const el = document.getElementById('input-label');
+  if (el) el.textContent = (mode === 'brutto') ? L.inputLabelB : L.inputLabelE;
+  const eh = document.getElementById('input-hint');
+  if (eh) eh.textContent = (mode === 'brutto') ? L.inputHintB : L.inputHintE;
+}
+
+
 let mode = 'brutto';
 
-const MONTHS = ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
+function getMonths() { return I18N[LANG].months; }
+function getMonthsShort() { return I18N[LANG].monthsShort; }
 const ZUS_ANNUAL_LIMIT = 282600;
 
 function setMode(m) {
   mode = m;
   document.getElementById('btn-brutto').classList.toggle('active', m === 'brutto');
   document.getElementById('btn-employer').classList.toggle('active', m === 'employer');
-  if (m === 'brutto') {
-    document.getElementById('input-label').textContent = 'Зарплата брутто (месяц)';
-    document.getElementById('input-hint').textContent = 'Сумма, указанная в трудовом договоре';
-  } else {
-    document.getElementById('input-label').textContent = 'Полная стоимость найма (месяц)';
-    document.getElementById('input-hint').textContent = 'Общие расходы работодателя, включая его взносы ZUS';
-  }
+  const L2 = I18N[LANG];
+  document.getElementById('input-label').textContent = (m === 'brutto') ? L2.inputLabelB : L2.inputLabelE;
+  document.getElementById('input-hint').textContent  = (m === 'brutto') ? L2.inputHintB  : L2.inputHintE;
   autoCalc();
 }
 
@@ -780,6 +1226,8 @@ function toggleCheck(id) {
 
 // Init checked state for pit2
 document.getElementById('ci-pit2').classList.add('checked');
+// Apply default language (RU)
+applyLang();
 
 function fmt(n) {
   return n.toLocaleString('pl-PL', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' zł';
@@ -1094,48 +1542,48 @@ function calculate() {
   // Summary cards
   html += `<div class="summary-grid">
     <div class="summary-card highlight">
-      <div class="card-label">Нетто / мес (среднее)</div>
+      <div class="card-label">${t('cardNettoMon')}</div>
       <div class="card-val accent">${fmt(annNetto / 12)}</div>
-      <div class="card-sub">На руки (после декларации)</div>
+      <div class="card-sub">${t('cardNettoSub')}</div>
     </div>
     <div class="summary-card highlight4">
-      <div class="card-label">Полная стоимость / мес (среднее)</div>
+      <div class="card-label">${t('cardCostMon')}</div>
       <div class="card-val purple">${fmt(annTotalCost / 12)}</div>
-      <div class="card-sub">Расходы работодателя</div>
+      <div class="card-sub">${t('cardCostSub')}</div>
     </div>
     <div class="summary-card highlight2">
-      <div class="card-label">Нетто / год</div>
+      <div class="card-label">${t('cardNettoYr')}</div>
       <div class="card-val accent2">${fmt(annNetto)}</div>
-      <div class="card-sub">Итого за год (после декларации)</div>
+      <div class="card-sub">${t('cardNettoYrSub')}</div>
     </div>
     <div class="summary-card highlight3">
-      <div class="card-label">Полная стоимость / год</div>
+      <div class="card-label">${t('cardCostYr')}</div>
       <div class="card-val accent3">${fmt(annTotalCost)}</div>
-      <div class="card-sub">Расходы работодателя за год</div>
+      <div class="card-sub">${t('cardCostYrSub')}</div>
     </div>
   </div>`;
 
   // Efficiency bars
   html += `<div class="rate-bar-wrap">
-    <div class="rate-bar-label">Эффективные ставки (от брутто работника)</div>
+    <div class="rate-bar-label">${t('effTitle')}</div>
     <div class="rate-bars">
       <div class="rate-bar-row">
-        <div class="rate-bar-name">Налог PIT</div>
+        <div class="rate-bar-name">${t('effPit')}</div>
         <div class="rate-bar-track"><div class="rate-bar-fill" style="width:${Math.min(effTaxRate,50)}%;background:var(--accent3)"></div></div>
         <div class="rate-bar-pct">${effTaxRate.toFixed(1)}%</div>
       </div>
       <div class="rate-bar-row">
-        <div class="rate-bar-name">ZUS + медицинский (работник)</div>
+        <div class="rate-bar-name">${t('effZus')}</div>
         <div class="rate-bar-track"><div class="rate-bar-fill" style="width:${Math.min(effZusWorker,50)}%;background:var(--blue)"></div></div>
         <div class="rate-bar-pct">${effZusWorker.toFixed(1)}%</div>
       </div>
       <div class="rate-bar-row">
-        <div class="rate-bar-name">Всего с работника (от брутто)</div>
+        <div class="rate-bar-name">${t('effWorker')}</div>
         <div class="rate-bar-track"><div class="rate-bar-fill" style="width:${Math.min(effWorkerTotal,60)}%;background:var(--orange)"></div></div>
         <div class="rate-bar-pct">${effWorkerTotal.toFixed(1)}%</div>
       </div>
       <div class="rate-bar-row">
-        <div class="rate-bar-name">Всего (от стоим. найма)</div>
+        <div class="rate-bar-name">${t('effTotal')}</div>
         <div class="rate-bar-track"><div class="rate-bar-fill" style="width:${Math.min(totalDeductionsFromCost,70)}%;background:var(--accent)"></div></div>
         <div class="rate-bar-pct">${totalDeductionsFromCost.toFixed(1)}%</div>
       </div>
@@ -1149,23 +1597,23 @@ function calculate() {
   // Employer side
   html += `<div class="breakdown-section">
     <div class="breakdown-header employer">
-      <span>Взносы работодателя / мес</span>
+      <span>${t('empHeader')}</span>
       <span>${fmt(M.emp_total)}</span>
     </div>
     <div class="breakdown-row">
-      <span class="name">Пенсионное (emerytalne)</span>
+      <span class="name">${t('empPension')}</span>
       <span><span class="rate">9,76%</span><span class="val">${fmt(M.emp_em)}</span></span>
     </div>
     <div class="breakdown-row">
-      <span class="name">Рентное (rentowe)</span>
+      <span class="name">${t('empRent')}</span>
       <span><span class="rate">6,50%</span><span class="val">${fmt(M.emp_rent)}</span></span>
     </div>
     <div class="breakdown-row">
-      <span class="name">Несчастные случаи (wypadkowe)</span>
+      <span class="name">${t('empAccident')}</span>
       <span><span class="rate">${wypRate.toFixed(2)}%</span><span class="val">${fmt(M.emp_wyp)}</span></span>
     </div>
     <div class="breakdown-row ${M.emp_fp === 0 ? 'zero' : ''}">
-      <span class="name">Фонд труда (FP + FS)${M.emp_fp === 0 ? ' <span class="tag orange">< мин. зарплата</span>' : ''}</span>
+      <span class="name">${t('empFP')}${M.emp_fp === 0 ? ` <span class="tag orange">${t('empFPLow')}</span>` : ''}</span>
       <span><span class="rate">2,45%</span><span class="val">${fmt(M.emp_fp)}</span></span>
     </div>
     <div class="breakdown-row">
@@ -1177,11 +1625,11 @@ function calculate() {
       <span><span class="rate">1,50%</span><span class="val">${fmt(M.emp_ppk)}</span></span>
     </div>` : ''}
     <div class="breakdown-row subtotal">
-      <span class="name">Итого взносов (сверх брутто)</span>
+      <span class="name">${t('empTotal')}</span>
       <span><span class="val total">${fmt(M.emp_total)}</span></span>
     </div>
     <div class="breakdown-row subtotal" style="background:rgba(232,255,71,0.07)">
-      <span class="name" style="color:var(--accent)">= Полная стоимость найма</span>
+      <span class="name" style="color:var(--accent)">${t('empTotalCost')}</span>
       <span><span class="val" style="color:var(--accent);font-weight:800">${fmt(M.totalCost)}</span></span>
     </div>
   </div>`;
@@ -1189,46 +1637,46 @@ function calculate() {
   // Employee side — вынесено в функцию для реактивного обновления по месяцу
   function renderEmployeeBreakdown(midx) {
     const Mx = months[midx];
-    const monthName = MONTHS[midx];
+    const monthName = getMonths()[midx];
     const isPit0exempt = Mx.pitDebug && Mx.pitDebug.exempt;
     return `<div class="breakdown-header employee">
-      <span>Удержания с работника — ${monthName}</span>
+      <span>${t('ewHeader')}${monthName}</span>
       <span></span>
     </div>
     <div class="breakdown-row">
-      <span class="name">Брутто (по договору)</span>
+      <span class="name">${t('ewBrutto')}</span>
       <span><span class="val">${fmt(Mx.brutto)}</span></span>
     </div>
     <div class="breakdown-row">
-      <span class="name">− Пенсионное (работник)</span>
+      <span class="name">${t('ewPension')}</span>
       <span><span class="rate">9,76%</span><span class="val negative">−${fmt(Mx.ew_em)}</span></span>
     </div>
     <div class="breakdown-row">
-      <span class="name">− Рентное (работник)</span>
+      <span class="name">${t('ewRent')}</span>
       <span><span class="rate">1,50%</span><span class="val negative">−${fmt(Mx.ew_rent)}</span></span>
     </div>
     <div class="breakdown-row">
-      <span class="name">− Больничное (chorobowe)</span>
+      <span class="name">${t('ewSick')}</span>
       <span><span class="rate">2,45%</span><span class="val negative">−${fmt(Mx.ew_choro)}</span></span>
     </div>
     <div class="breakdown-row">
-      <span class="name">− Медицинское (zdrowotne)</span>
+      <span class="name">${t('ewHealth')}</span>
       <span><span class="rate">9,00%</span><span class="val negative">−${fmt(Mx.ew_health)}</span></span>
     </div>
     ${ppk ? `<div class="breakdown-row">
-      <span class="name">− PPK (работник) <span class="tag green">PPK</span></span>
+      <span class="name">${t('ewPpk')} <span class="tag green">PPK</span></span>
       <span><span class="rate">2,00%</span><span class="val negative">−${fmt(Mx.ew_ppk)}</span></span>
     </div>` : ''}
     <div class="breakdown-row">
-      <span class="name">Расходы на доход (KUP)</span>
+      <span class="name">${t('ewKup')}</span>
       <span><span class="val">${fmt(Mx.kup)}</span></span>
     </div>
     <div class="breakdown-row ${isPit0exempt ? 'zero' : ''}">
-      <span class="name">− Аванс PIT ${isPit0exempt ? '<span class="tag green">0%</span>' : ''}</span>
+      <span class="name">${t('ewPit')} ${isPit0exempt ? '<span class="tag green">0%</span>' : ''}</span>
       <span><span class="val negative">−${fmt(Mx.pit)}</span></span>
     </div>
     <div class="breakdown-row subtotal" style="background:rgba(232,255,71,0.07)">
-      <span class="name" style="color:var(--accent)">= Нетто (на руки)</span>
+      <span class="name" style="color:var(--accent)">${t('ewNetto')}</span>
       <span><span class="val" style="color:var(--accent);font-weight:800">${fmt(Mx.netto)}</span></span>
     </div>`;
   }
@@ -1250,41 +1698,41 @@ function calculate() {
       const usedBefore = Math.max(0, 85528 - pdx.exemptRemaining);
       const usedAfter  = Math.min(85528, usedBefore + (pdx.pitBase || 0));
       h += `<div class="breakdown-row">
-        <span class="name" style="color:var(--green)">✓ Zerowy PIT — доход в пределах лимита 85 528 zł/год</span>
+        <span class="name" style="color:var(--green)">${t('pitZeroOk')}</span>
         <span class="val" style="color:var(--green)">0,00 zł</span>
       </div>
       <div class="breakdown-row" style="background:rgba(74,222,128,0.05)">
-        <span class="name" style="color:var(--text-muted)">Использовано лимита до этого месяца</span>
+        <span class="name" style="color:var(--text-muted)">${t('pitZeroUsed')}</span>
         <span class="val" style="color:var(--text-muted)">${fmtN(usedBefore)} zł из 85 528 zł</span>
       </div>
       <div class="breakdown-row" style="background:rgba(74,222,128,0.05)">
-        <span class="name" style="color:var(--green)">Остаток лимита после этого месяца</span>
+        <span class="name" style="color:var(--green)">${t('pitZeroRem')}</span>
         <span class="val" style="color:var(--green)">${fmtN(Math.max(0, 85528 - usedAfter))} zł</span>
       </div>`;
 
     } else if (pdx.pit0limitExceeded) {
       h += `<div class="breakdown-row" style="background:rgba(255,107,107,0.06)">
-        <span class="name" style="color:var(--accent3)">⚠ Лимит Zerowy PIT превышен (85 528 zł/год)</span>
+        <span class="name" style="color:var(--accent3)">${t('pitZeroExc')}</span>
         <span></span>
       </div>
       <div class="breakdown-row">
-        <span class="name">Налогооблагаемая база месяца</span>
+        <span class="name">${t('pitTaxBase')}</span>
         <span class="val">${fmtN(pdx.pitBase)} zł</span>
       </div>
       <div class="breakdown-row">
-        <span class="name" style="color:var(--green)">− Остаток освобождения (до лимита)</span>
+        <span class="name" style="color:var(--green)">${t('pitExemptRem')}</span>
         <span class="val" style="color:var(--green)">−${fmtN(pdx.exemptRemaining)} zł</span>
       </div>
       <div class="breakdown-row subtotal">
-        <span class="name">= Облагаемая база (сверх лимита)</span>
+        <span class="name">${t('pitTaxableBase')}</span>
         <span class="val total">${fmtN(pdx.taxableBase)} zł/мес</span>
       </div>
       <div class="breakdown-row" style="background:rgba(255,255,255,0.015)">
-        <span class="name" style="color:var(--text-muted)">× 12 → годовая база для ставки</span>
+        <span class="name" style="color:var(--text-muted)">${t('pitAnnualScale')}</span>
         <span class="val" style="color:var(--text-muted)">${fmtN(pdx.taxableBase * 12)} zł/год</span>
       </div>
       <div class="breakdown-row">
-        <span class="name">Налог по шкале (год) ÷ 12</span>
+        <span class="name">${t('pitMonthTax')}</span>
         <span class="val">${fmtN(pdx.monthlyTax)} zł/мес</span>
       </div>
       ${pit2 ? `<div class="breakdown-row">
@@ -1292,51 +1740,51 @@ function calculate() {
         <span class="val negative">−${fmtN(pdx.pit2reduction)} zł</span>
       </div>` : ''}
       <div class="breakdown-row subtotal" style="background:rgba(255,107,107,0.08)">
-        <span class="name" style="color:var(--accent3)">= Аванс PIT к уплате</span>
+        <span class="name" style="color:var(--accent3)">${t('pitAdvance')}</span>
         <span class="val" style="color:var(--accent3);font-weight:800">${fmt(Mx.pit)}</span>
       </div>`;
 
     } else {
       h += `
       <div class="breakdown-row">
-        <span class="name">Брутто</span>
+        <span class="name">${t('pitBrutto')}</span>
         <span class="val">${fmt(Mx.brutto)}</span>
       </div>
       <div class="breakdown-row">
-        <span class="name">− Взносы ZUS (соц. часть работника)</span>
+        <span class="name">${t('pitZusSoc')}</span>
         <span class="val negative">−${fmt(Mx.ew_zus_social)}</span>
       </div>
       <div class="breakdown-row">
-        <span class="name">− KUP (расходы на получение дохода)</span>
+        <span class="name">${t('pitKup')}</span>
         <span class="val negative">−${fmt(Mx.kup)}</span>
       </div>
       <div class="breakdown-row subtotal">
-        <span class="name">= Налогооблагаемая база (мес) <span class="tag orange">округл. до zł</span></span>
+        <span class="name">${t('pitBaseRound')} <span class="tag orange">${t('pitRounded')}</span></span>
         <span class="val total">${fmtN(pdx.pitBase)} zł</span>
       </div>
       <div class="breakdown-row" style="background:rgba(255,255,255,0.015)">
-        <span class="name" style="color:var(--text-muted)">База YTD без этого месяца</span>
+        <span class="name" style="color:var(--text-muted)">${t('pitPrevBase')}</span>
         <span class="val" style="color:var(--text-muted)">${fmtN(pdx.prevBase)} zł</span>
       </div>
       <div class="breakdown-row" style="background:rgba(255,255,255,0.025)">
-        <span class="name" style="color:var(--text)">База YTD включая этот месяц</span>
+        <span class="name" style="color:var(--text)">${t('pitYtdBase')}</span>
         <span class="val">${fmtN(pdx.ytdBase)} zł</span>
       </div>`;
 
       if (joint && pdx.halfCombined !== null) {
         h += `
         <div class="breakdown-row" style="background:rgba(192,132,252,0.06)">
-          <span class="name" style="color:var(--purple)">+ Доход супруга/супруги (YTD)</span>
+          <span class="name" style="color:var(--purple)">${t('pitSpouseYtd')}</span>
           <span class="val" style="color:var(--purple)">${fmtN(spouseIncome)} zł/год</span>
         </div>
         <div class="breakdown-row" style="background:rgba(192,132,252,0.06)">
-          <span class="name" style="color:var(--purple)">÷ 2 → половина суммарного YTD</span>
+          <span class="name" style="color:var(--purple)">${t('pitHalf')}</span>
           <span class="val" style="color:var(--purple)">${fmtN(pdx.halfCombined)} zł</span>
         </div>`;
       }
 
       h += `<div class="breakdown-row" style="padding-top:0.7rem;border-top:1px dashed var(--border)">
-        <span class="name" style="color:var(--text-muted);font-size:0.68rem">Шкала нарастающим итогом: до 30 000 zł — 0%, 30 000–120 000 — 12%, свыше 120 000 — 32%</span>
+        <span class="name" style="color:var(--text-muted);font-size:0.68rem">${t('pitScale')}</span>
         <span></span>
       </div>`;
 
@@ -1347,7 +1795,7 @@ function calculate() {
 
       if (scaleBase <= 30000) {
         h += `<div class="breakdown-row">
-          <span class="name">Весь YTD доход — в квоте 0% (до 30 000 zł)</span>
+          <span class="name">${t('pitFreeAll')}</span>
           <span class="val" style="color:var(--green)">0,00 zł</span>
         </div>`;
       } else {
@@ -1355,56 +1803,56 @@ function calculate() {
         const r2b = Math.max(0, scaleBase - 120000);
         h += `
         <div class="breakdown-row">
-          <span class="name">Квота свободная от налога (YTD)</span>
+          <span class="name">${t('pitFreeQuota')}</span>
           <span><span class="rate">0%</span><span class="val" style="color:var(--green)">30 000 zł → 0,00 zł</span></span>
         </div>
         <div class="breakdown-row">
-          <span class="name">Часть по ставке 12% (YTD) <span style="color:var(--text-muted);font-size:0.68rem">${fmtN(r1b)} zł × 12%</span></span>
+          <span class="name">${t('pitBracket12')} <span style="color:var(--text-muted);font-size:0.68rem">${fmtN(r1b)} zł × 12%</span></span>
           <span><span class="rate">12%</span><span class="val">${fmtN(r1b * 0.12)} zł</span></span>
         </div>`;
         if (r2b > 0) {
           h += `<div class="breakdown-row">
-            <span class="name">Часть по ставке 32% (YTD) <span style="color:var(--text-muted);font-size:0.68rem">${fmtN(r2b)} zł × 32%</span></span>
+            <span class="name">${t('pitBracket32')} <span style="color:var(--text-muted);font-size:0.68rem">${fmtN(r2b)} zł × 32%</span></span>
             <span><span class="rate" style="color:var(--accent3)">32%</span><span class="val" style="color:var(--accent3)">${fmtN(r2b * 0.32)} zł</span></span>
           </div>`;
         }
         h += `<div class="breakdown-row subtotal">
-          <span class="name">${joint ? 'Налог YTD на половину × 2' : 'Налог YTD по шкале'}</span>
+          <span class="name">${joint ? t('pitYtdTaxJoint') : t('pitYtdTax')}</span>
           <span class="val total">${fmtN(pdx.ytdTax)} zł</span>
         </div>`;
       }
 
       h += `
       <div class="breakdown-row" style="background:rgba(255,255,255,0.015)">
-        <span class="name" style="color:var(--text-muted)">− Налог YTD без этого месяца</span>
+        <span class="name" style="color:var(--text-muted)">${t('pitPrevTax')}</span>
         <span class="val" style="color:var(--text-muted)">−${fmtN(pdx.prevTax)} zł</span>
       </div>
       <div class="breakdown-row subtotal">
-        <span class="name">= Налог за этот месяц (разница)</span>
+        <span class="name">${t('pitDiff')}</span>
         <span class="val total">${fmtN(pdx.taxThisMonth)} zł</span>
       </div>`;
 
       if (pit2) {
         h += `<div class="breakdown-row">
-          <span class="name">− PIT-2: квота 30 000 zł распределена по месяцам <span class="tag green">−300 zł/мес</span></span>
+          <span class="name">${t('pit2Applied')} <span class="tag green">−300 zł/мес</span></span>
           <span class="val negative">−${fmtN(pdx.pit2reduction)} zł</span>
         </div>`;
       } else {
         h += `<div class="breakdown-row zero">
-          <span class="name">PIT-2 не подан — квота учтётся в годовой декларации</span>
+          <span class="name">${t('pit2NotFiled')}</span>
           <span class="val">—</span>
         </div>`;
       }
 
       h += `<div class="breakdown-row subtotal" style="background:rgba(255,107,107,0.08)">
-        <span class="name" style="color:var(--accent3)">= Аванс PIT к уплате (мес) <span class="tag orange">округл. до zł</span></span>
+        <span class="name" style="color:var(--accent3)">${t('pitAdvanceMon')} <span class="tag orange">округл. до zł</span></span>
         <span class="val" style="color:var(--accent3);font-weight:800">${fmt(Mx.pit)}</span>
       </div>`;
     }
     return h;
   }
 
-  const monthTabsHtml = MONTHS.map((name, i) => {
+  const monthTabsHtml = getMonthsShort().map((name, i) => {
     const mx = months[i];
     const hasEvent = mx.limitApplied || (mx.pitDebug && (mx.pitDebug.pit0limitExceeded));
     const isFirst  = i === 0;
@@ -1416,13 +1864,13 @@ function calculate() {
              color:${isFirst ? '#0e0f14' : 'var(--text-dim)'};
              font-family:var(--font-mono);font-size:0.65rem;cursor:pointer;
              position:relative;white-space:nowrap;transition:all 0.15s"
-    >${name.slice(0,3)}${hasEvent ? '<span style="position:absolute;top:-3px;right:-3px;width:6px;height:6px;background:var(--accent);border-radius:50%;display:block"></span>' : ''}</button>`;
+    >${name}${hasEvent ? '<span style="position:absolute;top:-3px;right:-3px;width:6px;height:6px;background:var(--accent);border-radius:50%;display:block"></span>' : ''}</button>`;
   }).join('');
 
   html += `<div class="breakdown-section" style="margin-bottom:1rem">
     <div class="breakdown-header tax" style="flex-direction:column;gap:0.6rem;align-items:flex-start">
       <div style="display:flex;justify-content:space-between;width:100%;align-items:center">
-        <span>Подробный расчёт аванса PIT</span>
+        <span>${t('pitDetailTitle')}</span>
         <span id="pit-detail-val" style="color:var(--accent3)">${fmt(months[0].pit)}</span>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:0.35rem">${monthTabsHtml}</div>
@@ -1448,20 +1896,20 @@ function calculate() {
   // Annual table
   html += `<div class="annual-section">
     <div class="annual-header">
-      <span>Помесячный расчёт — весь год</span>
-      <span style="color:var(--text-muted);font-size:0.62rem">★ = лимит ZUS достигнут</span>
+      <span>${t('annualTitle')}</span>
+      <span style="color:var(--text-muted);font-size:0.62rem">${t('annualZusNote')}</span>
     </div>
     <div style="overflow-x:auto">
     <table class="annual-table">
       <thead>
         <tr>
-          <th>Месяц</th>
-          <th>Брутто</th>
-          <th>ZUS работника</th>
-          <th>Мед. взнос</th>
-          <th>PIT</th>
-          <th>Нетто</th>
-          <th>Стоим. найма</th>
+          <th>${t('tblMonth')}</th>
+          <th>${t('tblBrutto')}</th>
+          <th>${t('tblZus')}</th>
+          <th>${t('tblHealth')}</th>
+          <th>${t('tblPit')}</th>
+          <th>${t('tblNetto')}</th>
+          <th>${t('tblCost')}</th>
         </tr>
       </thead>
       <tbody>`;
@@ -1470,7 +1918,7 @@ function calculate() {
   months.forEach((m, i) => {
     const limitRow = m.limitApplied;
     html += `<tr${limitRow ? ' class="month-limit"' : ''}>
-      <td>${MONTHS[i]}</td>
+      <td>${getMonths()[i]}</td>
       <td>${fmtN(m.brutto)}</td>
       <td style="color:var(--blue)">${fmtN(m.ew_zus_social)}</td>
       <td style="color:var(--blue)">${fmtN(m.ew_health)}</td>
@@ -1484,7 +1932,7 @@ function calculate() {
   html += `</tbody>
       <tfoot>
         <tr>
-          <td>ИТОГО / год</td>
+          <td>${t('tblTotal')}</td>
           <td>${fmtN(annBrutto)}</td>
           <td style="color:var(--blue)">${fmtN(annEwZUS)}</td>
           <td style="color:var(--blue)">${fmtN(annEwHealth)}</td>
@@ -1500,23 +1948,23 @@ function calculate() {
   // Annual employer breakdown
   html += `<div class="breakdown-section" style="margin-bottom:1rem">
     <div class="breakdown-header employer">
-      <span>Взносы работодателя — ИТОГО ЗА ГОД</span>
+      <span>${t('annEmpHeader')}</span>
       <span>${fmt(annEmpZUS)}</span>
     </div>
     <div class="breakdown-row">
-      <span class="name">Пенсионное</span>
+      <span class="name">${t('annEmpPension')}</span>
       <span><span class="val">${fmt(annEmpEm)}</span></span>
     </div>
     <div class="breakdown-row">
-      <span class="name">Рентное</span>
+      <span class="name">${t('annEmpRent')}</span>
       <span><span class="val">${fmt(annEmpRent)}</span></span>
     </div>
     <div class="breakdown-row">
-      <span class="name">Несчастные случаи</span>
+      <span class="name">${t('annEmpAccident')}</span>
       <span><span class="val">${fmt(annEmpWyp)}</span></span>
     </div>
     <div class="breakdown-row">
-      <span class="name">Фонд труда (FP+FS)</span>
+      <span class="name">${t('annEmpFP')}</span>
       <span><span class="val">${fmt(annEmpFP)}</span></span>
     </div>
     <div class="breakdown-row">
@@ -1525,27 +1973,28 @@ function calculate() {
     </div>
     ${ppk ? `<div class="breakdown-row"><span class="name">PPK</span><span class="val">${fmt(annEmpPPK)}</span></div>` : ''}
     <div class="breakdown-row subtotal">
-      <span class="name">Брутто за год</span><span class="val total">${fmt(annBrutto)}</span>
+      <span class="name">${t('annBrutto')}</span><span class="val total">${fmt(annBrutto)}</span>
     </div>
     <div class="breakdown-row subtotal" style="background:rgba(232,255,71,0.07)">
-      <span class="name" style="color:var(--accent)">Полная стоимость найма за год</span>
+      <span class="name" style="color:var(--accent)">${t('annTotalCost')}</span>
       <span class="val" style="color:var(--accent);font-weight:800">${fmt(annTotalCost)}</span>
     </div>
   </div>`;
 
   // Notes
   let notes = [];
-  if (pit0) notes.push('<strong>Zerowy PIT:</strong> применено освобождение от налога для лиц до 26 лет.');
-  if (joint) notes.push('<strong>Совместный PIT:</strong> расчёт усреднён с доходом супруга/супруги (' + fmt(spouseIncome) + '/год). Точный годовой расчёт зависит от декларации PIT-37.' + (pit0 ? ' При активном Zerowy PIT ваш доход освобождён от налога — совместная декларация влияет только на расчёт налога супруга/супруги.' : ''));
-  if (autor) notes.push('<strong>Авторские расходы KUP ' + Math.round(autorKupRate*100) + '%:</strong> KUP = ' + Math.round(autorKupRate*100) + '% от авторской части (' + autorPct + '% брутто). Годовой лимит авторских KUP — 120 000 zł.');
-  if (ppk) notes.push('<strong>PPK:</strong> работодатель +1,5%, работник +2% от брутто. Взносы PPK не облагаются PIT на стадии взноса.');
-  notes.push('<strong>Лимит ZUS 282 600 zł</strong> учитывается автоматически: после превышения пенсионный (9,76%+9,76%) и рентный (6,5%+1,5%) взносы не начисляются.');
-  notes.push('Расчёт является приблизительным. Ставка больничного страхования: стандартная. Для точного расчёта используйте официальный калькулятор ZUS и консультируйтесь с бухгалтером.');
+  if (pit0) notes.push(t('noteZerowy')({pit0, spouseFmt:fmt(spouseIncome)}));
+  if (joint) notes.push(t('noteJoint')({spouseFmt:fmt(spouseIncome), pit0}));
+  if (autor) notes.push(t('noteAutor')({kupPct:Math.round(autorKupRate*100), autorPct}));
+  if (ppk) notes.push(t('notePpk')({}));
+  notes.push(t('noteZusLimit')({}));
+  notes.push(t('noteDisclaimer')({}));
 
   html += `<div class="results-note">${notes.join('<br>')}</div>`;
 
   document.getElementById('results-body').innerHTML = html;
 }
+
 </script>
 </body>
 </html>
