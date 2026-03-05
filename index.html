@@ -626,7 +626,7 @@
       <div class="panel-body">
         <div class="mode-toggle">
           <button class="mode-btn active" id="btn-brutto" onclick="setMode('brutto')" data-i18n="modeBrutto">Брутто работника</button>
-          <button class="mode-btn" id="btn-employer" onclick="setMode('employer')" data-i18n="modeEmployer">Полная стоимость найма</button>
+          <button class="mode-btn" id="btn-employer" onclick="setMode('employer')" data-i18n="modeEmployer">Полная стоим. найма</button>
         </div>
 
         <div class="field">
@@ -703,7 +703,7 @@
           </label>
 
           <label class="check-item" id="ci-pit2" onclick="toggleCheck('pit2')">
-            <input type="checkbox" id="pit2" checked>
+            <input type="checkbox" id="pit2">
             <div class="check-box"></div>
             <div class="check-text">
               <div class="check-name" id="cn-pit2">Залог PIT-2 (квота свободная от налога)</div>
@@ -775,7 +775,7 @@ const I18N = {
     ptOptions:      'Льготы и параметры',
     ptResults:      'Результаты расчёта',
     modeBrutto:     'Брутто работника',
-    modeEmployer:   'Полная стоимость найма',
+    modeEmployer:   'Полная стоим. найма',
     inputLabelB:    'Зарплата брутто (месяц)',
     inputHintB:     'Сумма, указанная в трудовом договоре',
     inputLabelE:    'Полная стоимость найма (месяц)',
@@ -955,7 +955,7 @@ const I18N = {
     ewPension:      '− Pension (employee)',
     ewRent:         '− Disability (employee)',
     ewSick:         '− Sickness (chorobowe)',
-    ewHealth:       '− Health (zdrowotne)',
+    ewHealth:       '− Health insurance (zdrowotne)',
     ewPpk:          '− PPK (employee)',
     ewKup:          'Tax-deductible costs (KUP)',
     ewPit:          '− PIT advance',
@@ -1222,8 +1222,6 @@ function toggleCheck(id) {
   autoCalc();
 }
 
-// Init checked state for pit2
-document.getElementById('ci-pit2').classList.add('checked');
 // Apply default language (RU)
 applyLang();
 
@@ -1523,7 +1521,7 @@ function calculate() {
   }
   // PIT-2 уменьшает итоговый налог на 3600 zł (квота wolna применяется через авансы)
   // но только если налога хватает (не уходим в минус)
-  const annPitFinal  = Math.max(0, calcAnnualPitFinal() - (pit2 ? 3600 : 0));
+  const annPitFinal  = Math.max(0, calcAnnualPitFinal());
   const annNetto     = annBrutto - annEwZUS - annEwHealth - annPitFinal - annEwPPK;
 
   const effTaxRate            = annBrutto > 0 ? (annPitFinal / annBrutto * 100) : 0;
