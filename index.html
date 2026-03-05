@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulator Wynagrodzeń 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0f14;
+    --surface: #16181f;
+    --surface2: #1e2029;
+    --border: #2a2d3a;
+    --accent: #e8ff47;
+    --accent2: #47ffe0;
+    --accent3: #ff6b6b;
+    --text: #e8eaf0;
+    --text-muted: #6b7080;
+    --text-dim: #9199a8;
+    --green: #4ade80;
+    --orange: #fb923c;
+    --blue: #60a5fa;
+    --purple: #c084fc;
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-display);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 10% 10%, rgba(232,255,71,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 90% 80%, rgba(71,255,224,0.04) 0%, transparent 60%);
+  }
+
+  .header {
+    padding: 2.5rem 2rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .header-badge {
+    background: var(--accent);
+    color: #0e0f14;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    padding: 0.3rem 0.7rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    display: inline-block;
+  }
+
+  h1 {
+    font-size: clamp(1.6rem, 4vw, 2.8rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    color: #fff;
+  }
+
+  h1 span { color: var(--accent); }
+
+  .header-sub {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-family: var(--font-mono);
+  }
+
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  @media (max-width: 900px) {
+    .container { grid-template-columns: 1fr; }
+    .header { padding: 1.5rem 1rem; }
+    .container { padding: 1rem; }
+  }
+
+  /* PANEL */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .panel-title {
+    font-size: 0.65rem;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 1rem 1.25rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .panel-body { padding: 1.25rem; }
+
+  /* TOGGLE */
+  .mode-toggle {
+    display: flex;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 3px;
+    margin-bottom: 1.25rem;
+  }
+
+  .mode-btn {
+    flex: 1;
+    padding: 0.55rem 0.5rem;
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .mode-btn.active {
+    background: var(--accent);
+    color: #0e0f14;
+  }
+
+  /* FIELD */
+  .field { margin-bottom: 1rem; }
+
+  .field label {
+    display: block;
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  .field-row {
+    display: flex;
+    align-items: center;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .field-row:focus-within { border-color: var(--accent); }
+
+  .field-row input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    padding: 0.65rem 0.9rem;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .field-unit {
+    padding: 0 0.9rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 500;
+    background: var(--surface2);
+    border-left: 1px solid var(--border);
+    height: 100%;
+    display: flex;
+    align-items: center;
+    min-height: 2.6rem;
+  }
+
+  .field-hint {
+    font-size: 0.68rem;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    margin-top: 0.35rem;
+  }
+
+  /* CHECKBOXES */
+  .section-label {
+    font-size: 0.65rem;
+    font-family: var(--font-mono);
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .check-group { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.25rem; }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    cursor: pointer;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface2);
+    transition: all 0.2s;
+  }
+
+  .check-item:hover { border-color: var(--text-muted); }
+  .check-item.checked { border-color: var(--accent); background: rgba(232,255,71,0.05); }
+
+  .check-item input[type="checkbox"] { display: none; }
+
+  .check-box {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+    transition: all 0.2s;
+  }
+
+  .check-item.checked .check-box {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .check-box::after {
+    content: '✓';
+    font-size: 10px;
+    color: #0e0f14;
+    display: none;
+    font-weight: 700;
+  }
+
+  .check-item.checked .check-box::after { display: block; }
+
+  .check-text { flex: 1; }
+  .check-name { font-size: 0.82rem; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .check-desc { font-size: 0.68rem; font-family: var(--font-mono); color: var(--text-muted); margin-top: 0.15rem; line-height: 1.4; }
+
+  /* SUBFIELD for honorarium */
+  .subfield {
+    display: none;
+    margin-top: 0.6rem;
+    padding: 0.6rem 0.75rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+  }
+  .subfield.visible { display: block; }
+  .subfield label {
+    font-size: 0.68rem;
+    font-family: var(--font-mono);
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.3rem;
+    display: block;
+  }
+  .subfield input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.4rem 0.7rem;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    width: 100px;
+    outline: none;
+  }
+  .subfield input:focus { border-color: var(--accent); }
+
+  /* BUTTON */
+  .calc-btn {
+    width: 100%;
+    padding: 0.85rem;
+    background: var(--accent);
+    color: #0e0f14;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    margin-top: 0.25rem;
+  }
+
+  .calc-btn:hover { background: #f4ff70; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(232,255,71,0.25); }
+  .calc-btn:active { transform: translateY(0); }
+
+  /* RESULTS */
+  .results-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    text-align: center;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .placeholder-icon {
+    font-size: 3rem;
+    opacity: 0.3;
+  }
+
+  /* SUMMARY CARDS */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  @media (max-width: 600px) { .summary-grid { grid-template-columns: 1fr 1fr; } }
+
+  .summary-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.1rem;
+  }
+
+  .summary-card.highlight { border-color: var(--accent); background: rgba(232,255,71,0.06); }
+  .summary-card.highlight2 { border-color: var(--accent2); background: rgba(71,255,224,0.05); }
+  .summary-card.highlight3 { border-color: var(--accent3); background: rgba(255,107,107,0.05); }
+  .summary-card.highlight4 { border-color: var(--purple); background: rgba(192,132,252,0.05); }
+
+  .card-label {
+    font-size: 0.62rem;
+    font-family: var(--font-mono);
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  .card-val {
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .card-val.accent { color: var(--accent); }
+  .card-val.accent2 { color: var(--accent2); }
+  .card-val.accent3 { color: var(--accent3); }
+  .card-val.purple { color: var(--purple); }
+
+  .card-sub {
+    font-size: 0.68rem;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+  }
+
+  /* BREAKDOWNS */
+  .breakdown-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  @media (max-width: 700px) { .breakdown-grid { grid-template-columns: 1fr; } }
+
+  .breakdown-section {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+
+  .breakdown-header {
+    padding: 0.6rem 1rem;
+    font-size: 0.62rem;
+    font-family: var(--font-mono);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .breakdown-header.employer { color: var(--orange); background: rgba(251,146,60,0.07); border-bottom-color: rgba(251,146,60,0.2); }
+  .breakdown-header.employee { color: var(--blue); background: rgba(96,165,250,0.07); border-bottom-color: rgba(96,165,250,0.2); }
+  .breakdown-header.tax { color: var(--accent3); background: rgba(255,107,107,0.07); border-bottom-color: rgba(255,107,107,0.2); }
+
+  .breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.55rem 1rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.82rem;
+    transition: background 0.15s;
+  }
+
+  .breakdown-row:last-child { border-bottom: none; }
+  .breakdown-row:hover { background: rgba(255,255,255,0.02); }
+  .breakdown-row .name { color: var(--text-dim); font-family: var(--font-mono); font-size: 0.75rem; }
+  .breakdown-row .rate { color: var(--text-muted); font-family: var(--font-mono); font-size: 0.68rem; margin-right: 0.5rem; }
+  .breakdown-row .val { font-family: var(--font-mono); font-weight: 500; color: var(--text); }
+  .breakdown-row .val.negative { color: var(--accent3); }
+  .breakdown-row .val.total { font-weight: 700; color: #fff; }
+  .breakdown-row.subtotal { background: rgba(255,255,255,0.03); }
+  .breakdown-row.subtotal .name { color: var(--text); font-weight: 600; font-family: var(--font-display); font-size: 0.82rem; }
+  .breakdown-row.zero { opacity: 0.4; }
+  .breakdown-row .tag {
+    font-size: 0.58rem;
+    font-family: var(--font-mono);
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    margin-left: 0.4rem;
+    letter-spacing: 0.05em;
+    vertical-align: middle;
+  }
+  .tag.green { background: rgba(74,222,128,0.15); color: var(--green); }
+  .tag.orange { background: rgba(251,146,60,0.15); color: var(--orange); }
+
+  /* ANNUAL TABLE */
+  .annual-section {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+
+  .annual-header {
+    padding: 0.65rem 1rem;
+    font-size: 0.62rem;
+    font-family: var(--font-mono);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+    background: rgba(232,255,71,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .annual-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .annual-table th {
+    font-size: 0.62rem;
+    font-family: var(--font-mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 0.5rem 1rem;
+    text-align: right;
+    background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .annual-table th:first-child { text-align: left; }
+
+  .annual-table td {
+    padding: 0.5rem 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-align: right;
+    border-bottom: 1px solid rgba(42,45,58,0.5);
+    color: var(--text-dim);
+  }
+
+  .annual-table td:first-child { text-align: left; color: var(--text); }
+  .annual-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .annual-table tr.month-limit td { background: rgba(232,255,71,0.04); }
+  .annual-table tr.month-limit td:first-child::after {
+    content: ' ★';
+    color: var(--accent);
+    font-size: 0.6rem;
+  }
+
+  .annual-table tfoot td {
+    font-weight: 700;
+    color: #fff;
+    background: rgba(255,255,255,0.04);
+    border-top: 1px solid var(--border);
+    font-size: 0.8rem;
+  }
+
+  /* EFFECTIVE RATE */
+  .rate-bar-wrap {
+    margin-top: 1rem;
+    padding: 1rem 1.1rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+  }
+
+  .rate-bar-label {
+    font-size: 0.62rem;
+    font-family: var(--font-mono);
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+
+  .rate-bars { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .rate-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+  }
+
+  .rate-bar-name { width: 160px; color: var(--text-dim); flex-shrink: 0; }
+  .rate-bar-track {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .rate-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .rate-bar-pct { width: 40px; text-align: right; color: var(--text); }
+
+  .divider { height: 1px; background: var(--border); margin: 1rem 0; }
+
+  .results-note {
+    font-size: 0.68rem;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    padding: 0.75rem 1rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    line-height: 1.6;
+  }
+
+  .results-note strong { color: var(--accent); }
+
+  /* SCROLL */
+  .results-scroll { overflow-y: auto; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-badge">PL · 2026</div>
+    <h1>Kalkulator<br>Wynagrodzeń <span>UoP</span></h1>
+  </div>
+  <div>
+    <div class="header-sub">Умова о праце · ZUS + PIT · Полный расчёт</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- LEFT: INPUTS -->
+  <div>
+    <div class="panel" style="margin-bottom:1rem">
+      <div class="panel-title">Режим ввода</div>
+      <div class="panel-body">
+        <div class="mode-toggle">
+          <button class="mode-btn active" id="btn-brutto" onclick="setMode('brutto')">Брутто работника</button>
+          <button class="mode-btn" id="btn-employer" onclick="setMode('employer')">Полная стоим. найма</button>
+        </div>
+
+        <div class="field">
+          <label id="input-label">Зарплата брутто (месяц)</label>
+          <div class="field-row">
+            <input type="number" id="salary-input" value="6000" min="0" step="100" oninput="autoCalc()">
+            <span class="field-unit">zł</span>
+          </div>
+          <div class="field-hint" id="input-hint">Сумма, указанная в трудовом договоре</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Льготы и параметры</div>
+      <div class="panel-body">
+
+        <div class="section-label">Налоговые льготы (PIT)</div>
+        <div class="check-group">
+
+          <label class="check-item" id="ci-pit0" onclick="toggleCheck('pit0')">
+            <input type="checkbox" id="pit0">
+            <div class="check-box"></div>
+            <div class="check-text">
+              <div class="check-name">Zerowy PIT — до 26 лет</div>
+              <div class="check-desc">Освобождение от PIT при доходе до 85 528 zł/год</div>
+            </div>
+          </label>
+
+          <label class="check-item" id="ci-joint" onclick="toggleCheck('joint')">
+            <input type="checkbox" id="joint">
+            <div class="check-box"></div>
+            <div class="check-text">
+              <div class="check-name">Совместный PIT с супругом/супругой</div>
+              <div class="check-desc">Применяется 1-й порог (12%) дольше за счёт усреднения дохода</div>
+            </div>
+          </label>
+
+          <label class="check-item" id="ci-autor" onclick="toggleCheck('autor')">
+            <input type="checkbox" id="autor">
+            <div class="check-box"></div>
+            <div class="check-text">
+              <div class="check-name">Авторские расходы (honorarium autorskie)</div>
+              <div class="check-desc">KUP % от авторской части вместо стандартных 250 zł/мес (лимит 120 000 zł/год)</div>
+            </div>
+          </label>
+
+          <div class="subfield" id="sf-autor">
+            <div style="display:flex;gap:1rem;flex-wrap:wrap">
+              <div>
+                <label>Ставка KUP от авторской части (%)</label>
+                <div style="display:flex;align-items:center;gap:0.4rem">
+                  <input type="number" id="autor-kup-rate" value="50" min="1" max="100" step="1" oninput="autoCalc()">
+                  <div style="display:flex;gap:0.3rem">
+                    <button onclick="setAutorRate(20)" style="background:var(--surface);border:1px solid var(--border);color:var(--text-dim);font-family:var(--font-mono);font-size:0.65rem;padding:0.25rem 0.5rem;border-radius:4px;cursor:pointer">20%</button>
+                    <button onclick="setAutorRate(50)" style="background:var(--surface);border:1px solid var(--border);color:var(--text-dim);font-family:var(--font-mono);font-size:0.65rem;padding:0.25rem 0.5rem;border-radius:4px;cursor:pointer">50%</button>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label>Доля авторской части от брутто (%)</label>
+                <input type="number" id="autor-pct" value="100" min="1" max="100" oninput="autoCalc()">
+              </div>
+            </div>
+          </div>
+
+          <label class="check-item" id="ci-kupdoj" onclick="toggleCheck('kupdoj')">
+            <input type="checkbox" id="kupdoj">
+            <div class="check-box"></div>
+            <div class="check-text">
+              <div class="check-name">Повышенные расходы (доп. место работы)</div>
+              <div class="check-desc">KUP = 300 zł/мес вместо 250 zł (другой населённый пункт)</div>
+            </div>
+          </label>
+
+          <label class="check-item" id="ci-pit2" onclick="toggleCheck('pit2')">
+            <input type="checkbox" id="pit2" checked>
+            <div class="check-box"></div>
+            <div class="check-text">
+              <div class="check-name">Залог PIT-2 (квота свободная от налога)</div>
+              <div class="check-desc">Квота 30 000 zł/год учитывается в авансах ежемесячно (−300 zł/мес), а не только в годовой декларации</div>
+            </div>
+          </label>
+
+        </div>
+
+        <div class="section-label">Взносы ZUS</div>
+        <div class="check-group">
+
+          <label class="check-item" id="ci-ppk" onclick="toggleCheck('ppk')">
+            <input type="checkbox" id="ppk">
+            <div class="check-box"></div>
+            <div class="check-text">
+              <div class="check-name">Участие в PPK</div>
+              <div class="check-desc">Работодатель +1,5%, работник +2% от брутто</div>
+            </div>
+          </label>
+
+        </div>
+
+        <div class="section-label">Параметры</div>
+        <div class="field">
+          <label>Ставка несчастного страхования (wypadkowe)</label>
+          <div class="field-row">
+            <input type="number" id="wyp-rate" value="1.67" min="0.67" max="3.33" step="0.01" oninput="autoCalc()">
+            <span class="field-unit">%</span>
+          </div>
+          <div class="field-hint">Стандарт: 1,67%. Зависит от отрасли и размера фирмы</div>
+        </div>
+
+        <div class="field">
+          <label>Доход супруга/супруги (год, для совм. PIT)</label>
+          <div class="field-row">
+            <input type="number" id="spouse-income" value="0" min="0" step="1000" oninput="autoCalc()">
+            <span class="field-unit">zł</span>
+          </div>
+          <div class="field-hint" id="spouse-hint">Заполните при выборе совместного PIT</div>
+        </div>
+
+        <button class="calc-btn" onclick="calculate()">⟶ Рассчитать</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: RESULTS -->
+  <div id="results-panel" class="panel results-scroll">
+    <div class="panel-title">Результаты расчёта</div>
+    <div class="panel-body" id="results-body">
+      <div class="results-placeholder">
+        <div class="placeholder-icon">⟶</div>
+        <div>Введите зарплату и нажмите<br>«Рассчитать»</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let mode = 'brutto';
+
+const MONTHS = ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
+const ZUS_ANNUAL_LIMIT = 282600;
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('btn-brutto').classList.toggle('active', m === 'brutto');
+  document.getElementById('btn-employer').classList.toggle('active', m === 'employer');
+  if (m === 'brutto') {
+    document.getElementById('input-label').textContent = 'Зарплата брутто (месяц)';
+    document.getElementById('input-hint').textContent = 'Сумма, указанная в трудовом договоре';
+  } else {
+    document.getElementById('input-label').textContent = 'Полная стоимость найма (месяц)';
+    document.getElementById('input-hint').textContent = 'Общие расходы работодателя, включая его взносы ZUS';
+  }
+  autoCalc();
+}
+
+function toggleCheck(id) {
+  const cb = document.getElementById(id);
+  const ci = document.getElementById('ci-' + id);
+  cb.checked = !cb.checked;
+  ci.classList.toggle('checked', cb.checked);
+
+  if (id === 'autor') {
+    document.getElementById('sf-autor').classList.toggle('visible', cb.checked);
+  }
+
+  autoCalc();
+}
+
+// Init checked state for pit2
+document.getElementById('ci-pit2').classList.add('checked');
+
+function fmt(n) {
+  return n.toLocaleString('pl-PL', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' zł';
+}
+function fmtN(n) {
+  return n.toLocaleString('pl-PL', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+function getChecked(id) {
+  return document.getElementById(id).checked;
+}
+
+function setAutorRate(v) {
+  document.getElementById('autor-kup-rate').value = v;
+  autoCalc();
+}
+
+function autoCalc() {
+  // no-op: calculate on button press
+}
+
+function bruttoFromEmployerCost(cost, wypRate, ppk) {
+  // cost = brutto + employer ZUS + (ppk 1.5% if ppk)
+  // employer ZUS = brutto * (0.0976 + 0.065 + wypRate/100 + 0.0245 + 0.001)
+  const zusRate = 0.0976 + 0.065 + (wypRate / 100) + 0.0245 + 0.001;
+  const ppkRate = ppk ? 0.015 : 0;
+  return cost / (1 + zusRate + ppkRate);
+}
+
+function annualTaxScale(income) {
+  if (income <= 0)      return 0;
+  if (income <= 30000)  return 0;
+  if (income <= 120000) return (income - 30000) * 0.12;
+  return (120000 - 30000) * 0.12 + (income - 120000) * 0.32;
+}
+
+function calcMonth(brutto, monthIdx, cumulativeBrutto, cumPitBase, cumKupAutor, options) {
+  const {pit0, joint, autor, autorPct, autorKupRate, kupdoj, pit2, ppk, limitZUS, wypRate, spouseIncome} = options;
+
+  const MIN_WAGE_2026 = 4806;
+  const PIT0_LIMIT    = 85528; // roczny limit zwolnienia dla osób do 26 lat
+
+  // ---- ZUS annual limit (30-krotność) ----
+  // Dotyczy: emerytalne, rentowe, chorobowe (ta sama podstawa)
+  const cumBefore = cumulativeBrutto;
+  const cumAfter = cumBefore + brutto;
+
+  let limitedBase = brutto; // podstawa ograniczona limitem (em, rent, choro)
+  if (limitZUS) {
+    if (cumBefore >= ZUS_ANNUAL_LIMIT) {
+      limitedBase = 0;
+    } else if (cumAfter > ZUS_ANNUAL_LIMIT) {
+      limitedBase = ZUS_ANNUAL_LIMIT - cumBefore;
+    }
+  }
+
+  // ---- Employer contributions ----
+  const emp_em    = limitedBase * 0.0976;
+  const emp_rent  = limitedBase * 0.065;
+  const emp_wyp   = brutto * (wypRate / 100);
+  // FP + FS (2,45%) nalicza się tylko gdy wynagrodzenie >= minimalne; też ograniczone limitem ZUS
+  const fpBase    = limitZUS ? limitedBase : brutto;
+  const emp_fp    = brutto >= MIN_WAGE_2026 ? fpBase * 0.0245 : 0;
+  const emp_fgsp  = brutto * 0.001;
+  const emp_ppk   = ppk ? brutto * 0.015 : 0;
+  const emp_total = emp_em + emp_rent + emp_wyp + emp_fp + emp_fgsp + emp_ppk;
+  const totalCost = brutto + emp_total;
+
+  // ---- Employee ZUS (potrącane z brutto) ----
+  const ew_em    = limitedBase * 0.0976;
+  const ew_rent  = limitedBase * 0.015;
+  const ew_choro = limitedBase * 0.0245; // chorobowe też od limitedBase
+  const ew_ppk   = ppk ? brutto * 0.02 : 0;
+  const ew_zus_social = ew_em + ew_rent + ew_choro;
+
+  // Składka zdrowotna: podstawa = brutto - składki społeczne pracownika
+  const healthBase = brutto - ew_zus_social;
+  const ew_health  = healthBase * 0.09;
+
+  // ---- KUP ----
+  const KUP_AUTOR_LIMIT = 120000;
+  let kup, kupAutorUsed = 0;
+  if (autor) {
+    const autorBase       = brutto * (autorPct / 100);
+    const kupAutorRaw     = autorBase * autorKupRate;
+    const autorRemaining  = Math.max(0, KUP_AUTOR_LIMIT - cumKupAutor);
+    const kupAutor        = Math.min(kupAutorRaw, autorRemaining);
+    const nonAutorBase    = brutto - autorBase;
+    const kupStandard     = nonAutorBase > 0 ? (kupdoj ? 300 : 250) : 0;
+    kup          = kupAutor + kupStandard;
+    kupAutorUsed = kupAutor; // для накопления годового лимита
+  } else {
+    kup = kupdoj ? 300 : 250;
+  }
+
+
+  // ---- PIT (Polski Ład 2022+) — metoda narastająca YTD ----
+  // Zaliczka miesięczna = podatek(YTD łącznie) − podatek(YTD bez tego miesiąca)
+  // Dzięki temu progi 30 000 i 120 000 zł stosują się dokładnie w właściwym miesiącu.
+
+
+  let pit = 0;
+  let pitDebug = {};
+  let halfCombined = null;
+
+  const pitBase = Math.max(0, Math.round(brutto - ew_zus_social - kup));
+
+  if (pit0) {
+    // Zerowy PIT — zwolnienie do 85 528 zł podstawy opodatkowania rocznie
+    const exemptRemaining = Math.max(0, PIT0_LIMIT - cumPitBase);
+    const taxableBase     = Math.max(0, pitBase - exemptRemaining);
+
+    if (taxableBase <= 0) {
+      pit = 0;
+      const usedBefore = cumPitBase;
+      pitDebug = { exempt: true, pitBase, exemptRemaining, taxableBase: 0, usedBefore };
+    } else {
+      // Часть или весь месяц сверх лимита zerowy PIT.
+      const ytdFull  = cumPitBase + pitBase;
+      const prevFull = cumPitBase;
+
+      let taxOnFull, taxOnPrev;
+      if (joint) {
+        // Совместный PIT + zerowy: пропорциональная доля работника от совместного налога
+        const spouseYtd  = spouseIncome / 12 * (monthIdx + 1);
+        const spousePrev = spouseIncome / 12 * monthIdx;
+        const jointFull  = 2 * annualTaxScale((ytdFull  + spouseYtd)  / 2) - 2 * annualTaxScale((Math.min(ytdFull,  PIT0_LIMIT) + spouseYtd)  / 2);
+        const jointPrev  = 2 * annualTaxScale((prevFull + spousePrev) / 2) - 2 * annualTaxScale((Math.min(prevFull, PIT0_LIMIT) + spousePrev) / 2);
+        const workerShareFull = ytdFull > 0 ? ytdFull / (ytdFull + spouseYtd) : 0.5;
+        const workerSharePrev = prevFull > 0 ? prevFull / (prevFull + spousePrev) : 0.5;
+        taxOnFull = jointFull * workerShareFull;
+        taxOnPrev = jointPrev * workerSharePrev;
+        halfCombined = (ytdFull + spouseYtd) / 2;
+      } else {
+        // Только zerowy: шкала к полному YTD минус шкала освобождённой части
+        taxOnFull = annualTaxScale(ytdFull)  - annualTaxScale(Math.min(ytdFull,  PIT0_LIMIT));
+        taxOnPrev = annualTaxScale(prevFull) - annualTaxScale(Math.min(prevFull, PIT0_LIMIT));
+      }
+
+      const taxThisMonth   = Math.max(0, taxOnFull - taxOnPrev);
+      const pit2reduction  = pit2 ? Math.min(300, taxThisMonth) : 0;
+      pit = Math.round(Math.max(0, taxThisMonth - pit2reduction));
+      pitDebug = {
+        exempt: false, pit0limitExceeded: true,
+        pitBase, exemptRemaining, taxableBase,
+        ytdFull, prevFull,
+        monthlyTax: taxThisMonth,
+        taxThisMonth, pit2reduction, pit,
+        halfCombined: halfCombined ?? null,
+      };
+    }
+
+  } else {
+    // Стандартный расчёт нарастающим итогом
+    const ytdBase  = cumPitBase + pitBase; // база YTD включая этот месяц
+    const prevBase = cumPitBase;           // база YTD без этого месяца
+
+    let ytdTax, prevTax, halfCombined = null;
+
+    if (joint) {
+      // Совместный PIT нарастающим итогом.
+      // Доход супруга равномерен — его YTD = spouseIncome / 12 * (monthIdx+1)
+      const spouseYtd  = spouseIncome / 12 * (monthIdx + 1);
+      const spousePrev = spouseIncome / 12 * monthIdx;
+      halfCombined     = (ytdBase + spouseYtd) / 2; // для отображения
+      // Полный совместный налог YTD
+      const ytdTaxJoint  = 2 * annualTaxScale((ytdBase  + spouseYtd)  / 2);
+      const prevTaxJoint = 2 * annualTaxScale((prevBase + spousePrev) / 2);
+      // Работник платит пропорционально своей доле в суммарном доходе
+      const workerShare = ytdBase > 0 ? ytdBase / (ytdBase + spouseYtd) : 0.5;
+      ytdTax  = ytdTaxJoint  * workerShare;
+      prevTax = prevTaxJoint * (prevBase > 0 ? prevBase / (prevBase + spousePrev) : 0.5);
+    } else {
+      // Стандартный YTD: шкала применяется к нарастающей базе напрямую
+      ytdTax  = annualTaxScale(ytdBase);
+      prevTax = annualTaxScale(prevBase);
+    }
+
+    const taxThisMonth  = Math.max(0, ytdTax - prevTax);
+    const pit2reduction = pit2 ? Math.min(300, taxThisMonth) : 0;
+    pit = Math.round(Math.max(0, taxThisMonth - pit2reduction));
+
+    pitDebug = {
+      exempt: false,
+      pitBase,
+      ytdBase,          // нарастающая база YTD вкл. этот месяц
+      prevBase,         // нарастающая база YTD без этого месяца
+      ytdTax,           // налог от YTD
+      prevTax,          // налог от prev YTD
+      taxThisMonth,     // налог за этот месяц = ytdTax − prevTax
+      monthlyTax: taxThisMonth,
+      pit2reduction,
+      halfCombined,
+      pit,
+      // для совместимости с отображением шкалы
+      annualBase: ytdBase,
+      annualTax:  ytdTax,
+    };
+  }
+
+
+  const netto = brutto - ew_zus_social - ew_health - pit - ew_ppk;
+
+  return {
+    brutto,
+    totalCost,
+    // employer
+    emp_em, emp_rent, emp_wyp, emp_fp, emp_fgsp, emp_ppk, emp_total,
+    // employee
+    ew_em, ew_rent, ew_choro, ew_ppk, ew_zus_social,
+    ew_health, kup, kupAutorUsed,
+    pit, pitDebug,
+    netto,
+    // flags
+    limitApplied: limitZUS && (limitedBase < brutto)
+  };
+}
+
+function calculate() {
+  const inputVal = parseFloat(document.getElementById('salary-input').value) || 0;
+  const wypRate = parseFloat(document.getElementById('wyp-rate').value) || 1.67;
+  const ppk = getChecked('ppk');
+  const limitZUS = true; // лимит 282 600 zł применяется всегда
+  const pit0 = getChecked('pit0');
+  const joint = getChecked('joint');
+  const autor = getChecked('autor');
+  const autorPct = parseFloat(document.getElementById('autor-pct').value) || 100;
+  const autorKupRate = (parseFloat(document.getElementById('autor-kup-rate').value) || 50) / 100;
+  const kupdoj = getChecked('kupdoj');
+  const pit2 = getChecked('pit2');
+  const spouseIncome = parseFloat(document.getElementById('spouse-income').value) || 0;
+
+  let brutto;
+  if (mode === 'employer') {
+    brutto = bruttoFromEmployerCost(inputVal, wypRate, ppk);
+  } else {
+    brutto = inputVal;
+  }
+
+  brutto = Math.round(brutto * 100) / 100;
+
+  const options = {pit0, joint, autor, autorPct, autorKupRate, kupdoj, pit2, ppk, limitZUS, wypRate, spouseIncome};
+
+  const months = [];
+  let cumulative   = 0;
+  let cumPitBase   = 0;
+  let cumKupAutor  = 0; // накопленный авторский KUP (лимит 120 000 zł/год)
+  for (let i = 0; i < 12; i++) {
+    const m = calcMonth(brutto, i, cumulative, cumPitBase, cumKupAutor, options);
+    months.push(m);
+    cumulative  += brutto;
+    cumPitBase  += m.pitDebug.pitBase ?? 0;
+    cumKupAutor += m.kupAutorUsed;
+  }
+
+  // Annual sums
+  const sum = (key) => months.reduce((a, m) => a + m[key], 0);
+
+  const annBrutto    = sum('brutto');
+  const annTotalCost = sum('totalCost');
+  const annPit       = sum('pit');       // сумма авансов (зависит от PIT-2)
+  const annEmpZUS    = sum('emp_total');
+  const annEwZUS     = sum('ew_zus_social');
+  const annEwHealth  = sum('ew_health');
+  const annEmpEm     = sum('emp_em');
+  const annEmpRent   = sum('emp_rent');
+  const annEmpWyp    = sum('emp_wyp');
+  const annEmpFP     = sum('emp_fp');
+  const annEmpFGSP   = sum('emp_fgsp');
+  const annEmpPPK    = sum('emp_ppk');
+  const annEwEm      = sum('ew_em');
+  const annEwRent    = sum('ew_rent');
+  const annEwChoro   = sum('ew_choro');
+  const annEwPPK     = sum('ew_ppk');
+
+  // Итоговый годовой PIT (после декларации) — не зависит от PIT-2
+  function calcAnnualPitFinal() {
+    const totalPitBase = months.reduce((a, m) => a + (m.pitDebug?.pitBase ?? 0), 0);
+
+    if (pit0) {
+      if (joint) {
+        const jointTax = 2 * annualTaxScale((totalPitBase + spouseIncome) / 2)
+                       - 2 * annualTaxScale((Math.min(totalPitBase, 85528) + spouseIncome) / 2);
+        const workerShare = totalPitBase / (totalPitBase + spouseIncome);
+        return jointTax * workerShare;
+      }
+      return annualTaxScale(totalPitBase) - annualTaxScale(Math.min(totalPitBase, 85528));
+    } else if (joint) {
+      const jointTax = 2 * annualTaxScale((totalPitBase + spouseIncome) / 2);
+      const workerShare = totalPitBase / (totalPitBase + spouseIncome);
+      return jointTax * workerShare;
+    } else {
+      return annualTaxScale(totalPitBase);
+    }
+  }
+  // PIT-2 уменьшает итоговый налог на 3600 zł (квота wolna применяется через авансы)
+  // но только если налога хватает (не уходим в минус)
+  const annPitFinal  = Math.max(0, calcAnnualPitFinal() - (pit2 ? 3600 : 0));
+  const annNetto     = annBrutto - annEwZUS - annEwHealth - annPitFinal - annEwPPK;
+
+  const effTaxRate            = annBrutto > 0 ? (annPitFinal / annBrutto * 100) : 0;
+  const effZusWorker          = annBrutto > 0 ? ((annEwZUS + annEwHealth) / annBrutto * 100) : 0;
+  const effWorkerTotal        = annBrutto > 0 ? ((annBrutto - annNetto) / annBrutto * 100) : 0;
+  const totalDeductionsFromCost = annTotalCost > 0 ? ((annTotalCost - annNetto) / annTotalCost * 100) : 0;
+
+  // Monthly reference (first month)
+  const M = months[0];
+
+  // Build HTML
+  let html = '';
+
+  // Summary cards
+  html += `<div class="summary-grid">
+    <div class="summary-card highlight">
+      <div class="card-label">Нетто / мес (среднее)</div>
+      <div class="card-val accent">${fmt(annNetto / 12)}</div>
+      <div class="card-sub">На руки (после декларации)</div>
+    </div>
+    <div class="summary-card highlight4">
+      <div class="card-label">Полная стоимость / мес (среднее)</div>
+      <div class="card-val purple">${fmt(annTotalCost / 12)}</div>
+      <div class="card-sub">Расходы работодателя</div>
+    </div>
+    <div class="summary-card highlight2">
+      <div class="card-label">Нетто / год</div>
+      <div class="card-val accent2">${fmt(annNetto)}</div>
+      <div class="card-sub">Итого за год (после декларации)</div>
+    </div>
+    <div class="summary-card highlight3">
+      <div class="card-label">Полная стоимость / год</div>
+      <div class="card-val accent3">${fmt(annTotalCost)}</div>
+      <div class="card-sub">Расходы работодателя за год</div>
+    </div>
+  </div>`;
+
+  // Efficiency bars
+  html += `<div class="rate-bar-wrap">
+    <div class="rate-bar-label">Эффективные ставки (от брутто работника)</div>
+    <div class="rate-bars">
+      <div class="rate-bar-row">
+        <div class="rate-bar-name">Налог PIT</div>
+        <div class="rate-bar-track"><div class="rate-bar-fill" style="width:${Math.min(effTaxRate,50)}%;background:var(--accent3)"></div></div>
+        <div class="rate-bar-pct">${effTaxRate.toFixed(1)}%</div>
+      </div>
+      <div class="rate-bar-row">
+        <div class="rate-bar-name">ZUS + медицинский (работник)</div>
+        <div class="rate-bar-track"><div class="rate-bar-fill" style="width:${Math.min(effZusWorker,50)}%;background:var(--blue)"></div></div>
+        <div class="rate-bar-pct">${effZusWorker.toFixed(1)}%</div>
+      </div>
+      <div class="rate-bar-row">
+        <div class="rate-bar-name">Всего с работника (от брутто)</div>
+        <div class="rate-bar-track"><div class="rate-bar-fill" style="width:${Math.min(effWorkerTotal,60)}%;background:var(--orange)"></div></div>
+        <div class="rate-bar-pct">${effWorkerTotal.toFixed(1)}%</div>
+      </div>
+      <div class="rate-bar-row">
+        <div class="rate-bar-name">Всего (от стоим. найма)</div>
+        <div class="rate-bar-track"><div class="rate-bar-fill" style="width:${Math.min(totalDeductionsFromCost,70)}%;background:var(--accent)"></div></div>
+        <div class="rate-bar-pct">${totalDeductionsFromCost.toFixed(1)}%</div>
+      </div>
+    </div>
+  </div>`;
+
+  // Breakdown grid
+  html += `<div class="divider"></div>
+  <div class="breakdown-grid">`;
+
+  // Employer side
+  html += `<div class="breakdown-section">
+    <div class="breakdown-header employer">
+      <span>Взносы работодателя / мес</span>
+      <span>${fmt(M.emp_total)}</span>
+    </div>
+    <div class="breakdown-row">
+      <span class="name">Пенсионное (emerytalne)</span>
+      <span><span class="rate">9,76%</span><span class="val">${fmt(M.emp_em)}</span></span>
+    </div>
+    <div class="breakdown-row">
+      <span class="name">Рентное (rentowe)</span>
+      <span><span class="rate">6,50%</span><span class="val">${fmt(M.emp_rent)}</span></span>
+    </div>
+    <div class="breakdown-row">
+      <span class="name">Несчастные случаи (wypadkowe)</span>
+      <span><span class="rate">${wypRate.toFixed(2)}%</span><span class="val">${fmt(M.emp_wyp)}</span></span>
+    </div>
+    <div class="breakdown-row ${M.emp_fp === 0 ? 'zero' : ''}">
+      <span class="name">Фонд труда (FP + FS)${M.emp_fp === 0 ? ' <span class="tag orange">< мин. зарплата</span>' : ''}</span>
+      <span><span class="rate">2,45%</span><span class="val">${fmt(M.emp_fp)}</span></span>
+    </div>
+    <div class="breakdown-row">
+      <span class="name">FGŚP</span>
+      <span><span class="rate">0,10%</span><span class="val">${fmt(M.emp_fgsp)}</span></span>
+    </div>
+    ${ppk ? `<div class="breakdown-row">
+      <span class="name">PPK <span class="tag green">PPK</span></span>
+      <span><span class="rate">1,50%</span><span class="val">${fmt(M.emp_ppk)}</span></span>
+    </div>` : ''}
+    <div class="breakdown-row subtotal">
+      <span class="name">Итого взносов (сверх брутто)</span>
+      <span><span class="val total">${fmt(M.emp_total)}</span></span>
+    </div>
+    <div class="breakdown-row subtotal" style="background:rgba(232,255,71,0.07)">
+      <span class="name" style="color:var(--accent)">= Полная стоимость найма</span>
+      <span><span class="val" style="color:var(--accent);font-weight:800">${fmt(M.totalCost)}</span></span>
+    </div>
+  </div>`;
+
+  // Employee side — вынесено в функцию для реактивного обновления по месяцу
+  function renderEmployeeBreakdown(midx) {
+    const Mx = months[midx];
+    const monthName = MONTHS[midx];
+    const isPit0exempt = Mx.pitDebug && Mx.pitDebug.exempt;
+    return `<div class="breakdown-header employee">
+      <span>Удержания с работника — ${monthName}</span>
+      <span></span>
+    </div>
+    <div class="breakdown-row">
+      <span class="name">Брутто (по договору)</span>
+      <span><span class="val">${fmt(Mx.brutto)}</span></span>
+    </div>
+    <div class="breakdown-row">
+      <span class="name">− Пенсионное (работник)</span>
+      <span><span class="rate">9,76%</span><span class="val negative">−${fmt(Mx.ew_em)}</span></span>
+    </div>
+    <div class="breakdown-row">
+      <span class="name">− Рентное (работник)</span>
+      <span><span class="rate">1,50%</span><span class="val negative">−${fmt(Mx.ew_rent)}</span></span>
+    </div>
+    <div class="breakdown-row">
+      <span class="name">− Больничное (chorobowe)</span>
+      <span><span class="rate">2,45%</span><span class="val negative">−${fmt(Mx.ew_choro)}</span></span>
+    </div>
+    <div class="breakdown-row">
+      <span class="name">− Медицинское (zdrowotne)</span>
+      <span><span class="rate">9,00%</span><span class="val negative">−${fmt(Mx.ew_health)}</span></span>
+    </div>
+    ${ppk ? `<div class="breakdown-row">
+      <span class="name">− PPK (работник) <span class="tag green">PPK</span></span>
+      <span><span class="rate">2,00%</span><span class="val negative">−${fmt(Mx.ew_ppk)}</span></span>
+    </div>` : ''}
+    <div class="breakdown-row">
+      <span class="name">Расходы на доход (KUP)</span>
+      <span><span class="val">${fmt(Mx.kup)}</span></span>
+    </div>
+    <div class="breakdown-row ${isPit0exempt ? 'zero' : ''}">
+      <span class="name">− Аванс PIT ${isPit0exempt ? '<span class="tag green">0%</span>' : ''}</span>
+      <span><span class="val negative">−${fmt(Mx.pit)}</span></span>
+    </div>
+    <div class="breakdown-row subtotal" style="background:rgba(232,255,71,0.07)">
+      <span class="name" style="color:var(--accent)">= Нетто (на руки)</span>
+      <span><span class="val" style="color:var(--accent);font-weight:800">${fmt(Mx.netto)}</span></span>
+    </div>`;
+  }
+
+  html += `<div class="breakdown-section" id="employee-breakdown">${renderEmployeeBreakdown(0)}</div>`;
+
+
+  html += `</div>`;
+
+  // ---- PIT detail block — с выбором месяца ----
+  window._calcMonths = months;
+
+  function renderPitDetail(midx) {
+    const Mx  = months[midx];
+    const pdx = Mx.pitDebug;
+    let h = '';
+
+    if (pdx.exempt) {
+      const usedBefore = Math.max(0, 85528 - pdx.exemptRemaining);
+      const usedAfter  = Math.min(85528, usedBefore + (pdx.pitBase || 0));
+      h += `<div class="breakdown-row">
+        <span class="name" style="color:var(--green)">✓ Zerowy PIT — доход в пределах лимита 85 528 zł/год</span>
+        <span class="val" style="color:var(--green)">0,00 zł</span>
+      </div>
+      <div class="breakdown-row" style="background:rgba(74,222,128,0.05)">
+        <span class="name" style="color:var(--text-muted)">Использовано лимита до этого месяца</span>
+        <span class="val" style="color:var(--text-muted)">${fmtN(usedBefore)} zł из 85 528 zł</span>
+      </div>
+      <div class="breakdown-row" style="background:rgba(74,222,128,0.05)">
+        <span class="name" style="color:var(--green)">Остаток лимита после этого месяца</span>
+        <span class="val" style="color:var(--green)">${fmtN(Math.max(0, 85528 - usedAfter))} zł</span>
+      </div>`;
+
+    } else if (pdx.pit0limitExceeded) {
+      h += `<div class="breakdown-row" style="background:rgba(255,107,107,0.06)">
+        <span class="name" style="color:var(--accent3)">⚠ Лимит Zerowy PIT превышен (85 528 zł/год)</span>
+        <span></span>
+      </div>
+      <div class="breakdown-row">
+        <span class="name">Налогооблагаемая база месяца</span>
+        <span class="val">${fmtN(pdx.pitBase)} zł</span>
+      </div>
+      <div class="breakdown-row">
+        <span class="name" style="color:var(--green)">− Остаток освобождения (до лимита)</span>
+        <span class="val" style="color:var(--green)">−${fmtN(pdx.exemptRemaining)} zł</span>
+      </div>
+      <div class="breakdown-row subtotal">
+        <span class="name">= Облагаемая база (сверх лимита)</span>
+        <span class="val total">${fmtN(pdx.taxableBase)} zł/мес</span>
+      </div>
+      <div class="breakdown-row" style="background:rgba(255,255,255,0.015)">
+        <span class="name" style="color:var(--text-muted)">× 12 → годовая база для ставки</span>
+        <span class="val" style="color:var(--text-muted)">${fmtN(pdx.taxableBase * 12)} zł/год</span>
+      </div>
+      <div class="breakdown-row">
+        <span class="name">Налог по шкале (год) ÷ 12</span>
+        <span class="val">${fmtN(pdx.monthlyTax)} zł/мес</span>
+      </div>
+      ${pit2 ? `<div class="breakdown-row">
+        <span class="name">− PIT-2 <span class="tag green">−300 zł/мес</span></span>
+        <span class="val negative">−${fmtN(pdx.pit2reduction)} zł</span>
+      </div>` : ''}
+      <div class="breakdown-row subtotal" style="background:rgba(255,107,107,0.08)">
+        <span class="name" style="color:var(--accent3)">= Аванс PIT к уплате</span>
+        <span class="val" style="color:var(--accent3);font-weight:800">${fmt(Mx.pit)}</span>
+      </div>`;
+
+    } else {
+      h += `
+      <div class="breakdown-row">
+        <span class="name">Брутто</span>
+        <span class="val">${fmt(Mx.brutto)}</span>
+      </div>
+      <div class="breakdown-row">
+        <span class="name">− Взносы ZUS (соц. часть работника)</span>
+        <span class="val negative">−${fmt(Mx.ew_zus_social)}</span>
+      </div>
+      <div class="breakdown-row">
+        <span class="name">− KUP (расходы на получение дохода)</span>
+        <span class="val negative">−${fmt(Mx.kup)}</span>
+      </div>
+      <div class="breakdown-row subtotal">
+        <span class="name">= Налогооблагаемая база (мес) <span class="tag orange">округл. до zł</span></span>
+        <span class="val total">${fmtN(pdx.pitBase)} zł</span>
+      </div>
+      <div class="breakdown-row" style="background:rgba(255,255,255,0.015)">
+        <span class="name" style="color:var(--text-muted)">База YTD без этого месяца</span>
+        <span class="val" style="color:var(--text-muted)">${fmtN(pdx.prevBase)} zł</span>
+      </div>
+      <div class="breakdown-row" style="background:rgba(255,255,255,0.025)">
+        <span class="name" style="color:var(--text)">База YTD включая этот месяц</span>
+        <span class="val">${fmtN(pdx.ytdBase)} zł</span>
+      </div>`;
+
+      if (joint && pdx.halfCombined !== null) {
+        h += `
+        <div class="breakdown-row" style="background:rgba(192,132,252,0.06)">
+          <span class="name" style="color:var(--purple)">+ Доход супруга/супруги (YTD)</span>
+          <span class="val" style="color:var(--purple)">${fmtN(spouseIncome)} zł/год</span>
+        </div>
+        <div class="breakdown-row" style="background:rgba(192,132,252,0.06)">
+          <span class="name" style="color:var(--purple)">÷ 2 → половина суммарного YTD</span>
+          <span class="val" style="color:var(--purple)">${fmtN(pdx.halfCombined)} zł</span>
+        </div>`;
+      }
+
+      h += `<div class="breakdown-row" style="padding-top:0.7rem;border-top:1px dashed var(--border)">
+        <span class="name" style="color:var(--text-muted);font-size:0.68rem">Шкала нарастающим итогом: до 30 000 zł — 0%, 30 000–120 000 — 12%, свыше 120 000 — 32%</span>
+        <span></span>
+      </div>`;
+
+      const scaleBase = joint && pdx.halfCombined !== null ? pdx.halfCombined : pdx.ytdBase;
+      const scalePrev = joint && pdx.halfCombined !== null
+        ? (pdx.ytdBase - pdx.pitBase + pdx.prevBase) / 2   // упрощение
+        : pdx.prevBase;
+
+      if (scaleBase <= 30000) {
+        h += `<div class="breakdown-row">
+          <span class="name">Весь YTD доход — в квоте 0% (до 30 000 zł)</span>
+          <span class="val" style="color:var(--green)">0,00 zł</span>
+        </div>`;
+      } else {
+        const r1b = Math.min(Math.max(0, scaleBase - 30000), 90000);
+        const r2b = Math.max(0, scaleBase - 120000);
+        h += `
+        <div class="breakdown-row">
+          <span class="name">Квота свободная от налога (YTD)</span>
+          <span><span class="rate">0%</span><span class="val" style="color:var(--green)">30 000 zł → 0,00 zł</span></span>
+        </div>
+        <div class="breakdown-row">
+          <span class="name">Часть по ставке 12% (YTD) <span style="color:var(--text-muted);font-size:0.68rem">${fmtN(r1b)} zł × 12%</span></span>
+          <span><span class="rate">12%</span><span class="val">${fmtN(r1b * 0.12)} zł</span></span>
+        </div>`;
+        if (r2b > 0) {
+          h += `<div class="breakdown-row">
+            <span class="name">Часть по ставке 32% (YTD) <span style="color:var(--text-muted);font-size:0.68rem">${fmtN(r2b)} zł × 32%</span></span>
+            <span><span class="rate" style="color:var(--accent3)">32%</span><span class="val" style="color:var(--accent3)">${fmtN(r2b * 0.32)} zł</span></span>
+          </div>`;
+        }
+        h += `<div class="breakdown-row subtotal">
+          <span class="name">${joint ? 'Налог YTD на половину × 2' : 'Налог YTD по шкале'}</span>
+          <span class="val total">${fmtN(pdx.ytdTax)} zł</span>
+        </div>`;
+      }
+
+      h += `
+      <div class="breakdown-row" style="background:rgba(255,255,255,0.015)">
+        <span class="name" style="color:var(--text-muted)">− Налог YTD без этого месяца</span>
+        <span class="val" style="color:var(--text-muted)">−${fmtN(pdx.prevTax)} zł</span>
+      </div>
+      <div class="breakdown-row subtotal">
+        <span class="name">= Налог за этот месяц (разница)</span>
+        <span class="val total">${fmtN(pdx.taxThisMonth)} zł</span>
+      </div>`;
+
+      if (pit2) {
+        h += `<div class="breakdown-row">
+          <span class="name">− PIT-2: квота 30 000 zł распределена по месяцам <span class="tag green">−300 zł/мес</span></span>
+          <span class="val negative">−${fmtN(pdx.pit2reduction)} zł</span>
+        </div>`;
+      } else {
+        h += `<div class="breakdown-row zero">
+          <span class="name">PIT-2 не подан — квота учтётся в годовой декларации</span>
+          <span class="val">—</span>
+        </div>`;
+      }
+
+      h += `<div class="breakdown-row subtotal" style="background:rgba(255,107,107,0.08)">
+        <span class="name" style="color:var(--accent3)">= Аванс PIT к уплате (мес) <span class="tag orange">округл. до zł</span></span>
+        <span class="val" style="color:var(--accent3);font-weight:800">${fmt(Mx.pit)}</span>
+      </div>`;
+    }
+    return h;
+  }
+
+  const monthTabsHtml = MONTHS.map((name, i) => {
+    const mx = months[i];
+    const hasEvent = mx.limitApplied || (mx.pitDebug && (mx.pitDebug.pit0limitExceeded));
+    const isFirst  = i === 0;
+    return `<button
+      onclick="selectPitMonth(${i})"
+      id="pit-tab-${i}"
+      style="padding:0.3rem 0.55rem;border-radius:5px;border:1px solid var(--border);
+             background:${isFirst ? 'var(--accent3)' : 'var(--surface2)'};
+             color:${isFirst ? '#0e0f14' : 'var(--text-dim)'};
+             font-family:var(--font-mono);font-size:0.65rem;cursor:pointer;
+             position:relative;white-space:nowrap;transition:all 0.15s"
+    >${name.slice(0,3)}${hasEvent ? '<span style="position:absolute;top:-3px;right:-3px;width:6px;height:6px;background:var(--accent);border-radius:50%;display:block"></span>' : ''}</button>`;
+  }).join('');
+
+  html += `<div class="breakdown-section" style="margin-bottom:1rem">
+    <div class="breakdown-header tax" style="flex-direction:column;gap:0.6rem;align-items:flex-start">
+      <div style="display:flex;justify-content:space-between;width:100%;align-items:center">
+        <span>Подробный расчёт аванса PIT</span>
+        <span id="pit-detail-val" style="color:var(--accent3)">${fmt(months[0].pit)}</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:0.35rem">${monthTabsHtml}</div>
+    </div>
+    <div id="pit-detail-body">${renderPitDetail(0)}</div>
+  </div>`;
+
+  window.selectPitMonth = function(idx) {
+    const ms = window._calcMonths;
+    if (!ms) return;
+    for (let i = 0; i < 12; i++) {
+      const btn = document.getElementById('pit-tab-' + i);
+      if (!btn) continue;
+      btn.style.background = i === idx ? 'var(--accent3)' : 'var(--surface2)';
+      btn.style.color      = i === idx ? '#0e0f14'        : 'var(--text-dim)';
+    }
+    document.getElementById('employee-breakdown').innerHTML = renderEmployeeBreakdown(idx);
+    document.getElementById('pit-detail-body').innerHTML    = renderPitDetail(idx);
+    document.getElementById('pit-detail-val').textContent  = fmt(ms[idx].pit);
+  };
+
+
+  // Annual table
+  html += `<div class="annual-section">
+    <div class="annual-header">
+      <span>Помесячный расчёт — весь год</span>
+      <span style="color:var(--text-muted);font-size:0.62rem">★ = лимит ZUS достигнут</span>
+    </div>
+    <div style="overflow-x:auto">
+    <table class="annual-table">
+      <thead>
+        <tr>
+          <th>Месяц</th>
+          <th>Брутто</th>
+          <th>ZUS работника</th>
+          <th>Мед. взнос</th>
+          <th>PIT</th>
+          <th>Нетто</th>
+          <th>Стоим. найма</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+  let annCumBrutto = 0;
+  months.forEach((m, i) => {
+    const limitRow = m.limitApplied;
+    html += `<tr${limitRow ? ' class="month-limit"' : ''}>
+      <td>${MONTHS[i]}</td>
+      <td>${fmtN(m.brutto)}</td>
+      <td style="color:var(--blue)">${fmtN(m.ew_zus_social)}</td>
+      <td style="color:var(--blue)">${fmtN(m.ew_health)}</td>
+      <td style="color:var(--accent3)">${fmtN(m.pit)}</td>
+      <td style="color:var(--accent);font-weight:600">${fmtN(m.netto)}</td>
+      <td style="color:var(--purple)">${fmtN(m.totalCost)}</td>
+    </tr>`;
+    annCumBrutto += m.brutto;
+  });
+
+  html += `</tbody>
+      <tfoot>
+        <tr>
+          <td>ИТОГО / год</td>
+          <td>${fmtN(annBrutto)}</td>
+          <td style="color:var(--blue)">${fmtN(annEwZUS)}</td>
+          <td style="color:var(--blue)">${fmtN(annEwHealth)}</td>
+          <td style="color:var(--accent3)">${fmtN(annPit)}</td>
+          <td style="color:var(--accent);font-weight:800">${fmtN(annNetto)}</td>
+          <td style="color:var(--purple)">${fmtN(annTotalCost)}</td>
+        </tr>
+      </tfoot>
+    </table>
+    </div>
+  </div>`;
+
+  // Annual employer breakdown
+  html += `<div class="breakdown-section" style="margin-bottom:1rem">
+    <div class="breakdown-header employer">
+      <span>Взносы работодателя — ИТОГО ЗА ГОД</span>
+      <span>${fmt(annEmpZUS)}</span>
+    </div>
+    <div class="breakdown-row">
+      <span class="name">Пенсионное</span>
+      <span><span class="val">${fmt(annEmpEm)}</span></span>
+    </div>
+    <div class="breakdown-row">
+      <span class="name">Рентное</span>
+      <span><span class="val">${fmt(annEmpRent)}</span></span>
+    </div>
+    <div class="breakdown-row">
+      <span class="name">Несчастные случаи</span>
+      <span><span class="val">${fmt(annEmpWyp)}</span></span>
+    </div>
+    <div class="breakdown-row">
+      <span class="name">Фонд труда (FP+FS)</span>
+      <span><span class="val">${fmt(annEmpFP)}</span></span>
+    </div>
+    <div class="breakdown-row">
+      <span class="name">FGŚP</span>
+      <span><span class="val">${fmt(annEmpFGSP)}</span></span>
+    </div>
+    ${ppk ? `<div class="breakdown-row"><span class="name">PPK</span><span class="val">${fmt(annEmpPPK)}</span></div>` : ''}
+    <div class="breakdown-row subtotal">
+      <span class="name">Брутто за год</span><span class="val total">${fmt(annBrutto)}</span>
+    </div>
+    <div class="breakdown-row subtotal" style="background:rgba(232,255,71,0.07)">
+      <span class="name" style="color:var(--accent)">Полная стоимость найма за год</span>
+      <span class="val" style="color:var(--accent);font-weight:800">${fmt(annTotalCost)}</span>
+    </div>
+  </div>`;
+
+  // Notes
+  let notes = [];
+  if (pit0) notes.push('<strong>Zerowy PIT:</strong> применено освобождение от налога для лиц до 26 лет.');
+  if (joint) notes.push('<strong>Совместный PIT:</strong> расчёт усреднён с доходом супруга/супруги (' + fmt(spouseIncome) + '/год). Точный годовой расчёт зависит от декларации PIT-37.' + (pit0 ? ' При активном Zerowy PIT ваш доход освобождён от налога — совместная декларация влияет только на расчёт налога супруга/супруги.' : ''));
+  if (autor) notes.push('<strong>Авторские расходы KUP ' + Math.round(autorKupRate*100) + '%:</strong> KUP = ' + Math.round(autorKupRate*100) + '% от авторской части (' + autorPct + '% брутто). Годовой лимит авторских KUP — 120 000 zł.');
+  if (ppk) notes.push('<strong>PPK:</strong> работодатель +1,5%, работник +2% от брутто. Взносы PPK не облагаются PIT на стадии взноса.');
+  notes.push('<strong>Лимит ZUS 282 600 zł</strong> учитывается автоматически: после превышения пенсионный (9,76%+9,76%) и рентный (6,5%+1,5%) взносы не начисляются.');
+  notes.push('Расчёт является приблизительным. Ставка больничного страхования: стандартная. Для точного расчёта используйте официальный калькулятор ZUS и консультируйтесь с бухгалтером.');
+
+  html += `<div class="results-note">${notes.join('<br>')}</div>`;
+
+  document.getElementById('results-body').innerHTML = html;
+}
+</script>
+</body>
+</html>
