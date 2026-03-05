@@ -713,9 +713,9 @@
 
         </div>
 
-        <div class="section-label" id="sl-zus">Взносы ZUS</div>
-        <div class="check-group">
+        <div class="section-label" id="sl-params">Параметры</div>
 
+        <div class="check-group">
           <label class="check-item" id="ci-ppk" onclick="toggleCheck('ppk')">
             <input type="checkbox" id="ppk">
             <div class="check-box"></div>
@@ -724,10 +724,8 @@
               <div class="check-desc" id="cd-ppk">Работодатель +1,5%, работник +2% от брутто</div>
             </div>
           </label>
-
         </div>
 
-        <div class="section-label" id="sl-params">Параметры</div>
         <div class="field">
           <label id="lbl-wyp">Ставка несчастного страхования (wypadkowe)</label>
           <div class="field-row">
@@ -1166,7 +1164,6 @@ function applyLang() {
   st('btn-brutto',     L.modeBrutto);
   st('btn-employer',   L.modeEmployer);
   st('sl-pit',         L.slPit);
-  st('sl-zus',         L.slZus);
   st('sl-params',      L.slParams);
   st('cn-pit0',        L.cnPit0);
   st('cd-pit0',        L.cdPit0);
@@ -1247,7 +1244,7 @@ function setAutorRate(v) {
 }
 
 function autoCalc() {
-  // no-op: calculate on button press
+  if (window._calcMonths) calculate();
 }
 
 function bruttoFromEmployerCost(cost, wypRate, ppk) {
