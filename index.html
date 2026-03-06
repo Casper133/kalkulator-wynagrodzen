@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -611,9 +611,9 @@
     <div class="header-sub" id="header-sub">Умова о праце · ZUS + PIT · Полный расчёт</div>
   </div>
   <div class="lang-switcher">
-    <button class="lang-btn active" onclick="setLang('RU')">RU</button>
-    <button class="lang-btn"        onclick="setLang('EN')">EN</button>
+    <button class="lang-btn active" onclick="setLang('EN')">EN</button>
     <button class="lang-btn"        onclick="setLang('PL')">PL</button>
+    <button class="lang-btn"        onclick="setLang('RU')">RU</button>
   </div>
 </div>
 
@@ -764,9 +764,9 @@
 
 <script>
 // ═══════════════════════════════════════════════════════
-// i18n — Локализация / Localisation / Lokalizacja
+// i18n — Localisation / Lokalizacja / Локализация
 // ═══════════════════════════════════════════════════════
-let LANG = 'RU';
+let LANG = 'EN';
 
 const I18N = {
   RU: {
@@ -1222,7 +1222,7 @@ function toggleCheck(id) {
   autoCalc();
 }
 
-// Apply default language (RU)
+// Apply default language (EN)
 applyLang();
 
 function fmt(n) {
@@ -1264,14 +1264,14 @@ function calcMonth(brutto, monthIdx, cumulativeBrutto, cumPitBase, cumKupAutor, 
   const {pit0, joint, autor, autorPct, autorKupRate, kupdoj, pit2, ppk, limitZUS, wypRate, spouseIncome} = options;
 
   const MIN_WAGE_2026 = 4806;
-  const PIT0_LIMIT    = 85528; // roczny limit zwolnienia dla osób do 26 lat
+  const PIT0_LIMIT    = 85528; // annual PIT exemption limit for persons under 26
 
-  // ---- ZUS annual limit (30-krotność) ----
-  // Dotyczy: emerytalne, rentowe, chorobowe (ta sama podstawa)
+  // ---- ZUS annual limit (30x average salary) ----
+  // Applies to: pension, disability, sickness (same base)
   const cumBefore = cumulativeBrutto;
   const cumAfter = cumBefore + brutto;
 
-  let limitedBase = brutto; // podstawa ograniczona limitem (em, rent, choro)
+  let limitedBase = brutto; // base capped at ZUS annual limit (pension, disability, sickness)
   if (limitZUS) {
     if (cumBefore >= ZUS_ANNUAL_LIMIT) {
       limitedBase = 0;
@@ -1284,7 +1284,7 @@ function calcMonth(brutto, monthIdx, cumulativeBrutto, cumPitBase, cumKupAutor, 
   const emp_em    = limitedBase * 0.0976;
   const emp_rent  = limitedBase * 0.065;
   const emp_wyp   = brutto * (wypRate / 100);
-  // FP + FS (2,45%) nalicza się tylko gdy wynagrodzenie >= minimalne; też ograniczone limitem ZUS
+  // FP + FS (2.45%) only applies when salary >= minimum wage; also capped at ZUS limit
   const fpBase    = limitZUS ? limitedBase : brutto;
   const emp_fp    = brutto >= MIN_WAGE_2026 ? fpBase * 0.0245 : 0;
   const emp_fgsp  = brutto * 0.001;
@@ -1292,14 +1292,14 @@ function calcMonth(brutto, monthIdx, cumulativeBrutto, cumPitBase, cumKupAutor, 
   const emp_total = emp_em + emp_rent + emp_wyp + emp_fp + emp_fgsp + emp_ppk;
   const totalCost = brutto + emp_total;
 
-  // ---- Employee ZUS (potrącane z brutto) ----
+  // ---- Employee ZUS (deducted from gross) ----
   const ew_em    = limitedBase * 0.0976;
   const ew_rent  = limitedBase * 0.015;
-  const ew_choro = limitedBase * 0.0245; // chorobowe też od limitedBase
+  const ew_choro = limitedBase * 0.0245; // sickness also based on limitedBase
   const ew_ppk   = ppk ? brutto * 0.02 : 0;
   const ew_zus_social = ew_em + ew_rent + ew_choro;
 
-  // Składka zdrowotna: podstawa = brutto - składki społeczne pracownika
+  // Health contribution: base = gross − employee social contributions
   const healthBase = brutto - ew_zus_social;
   const ew_health  = healthBase * 0.09;
 
@@ -1314,15 +1314,15 @@ function calcMonth(brutto, monthIdx, cumulativeBrutto, cumPitBase, cumKupAutor, 
     const nonAutorBase    = brutto - autorBase;
     const kupStandard     = nonAutorBase > 0 ? (kupdoj ? 300 : 250) : 0;
     kup          = kupAutor + kupStandard;
-    kupAutorUsed = kupAutor; // для накопления годового лимита
+    kupAutorUsed = kupAutor; // tracks annual KUP limit accumulation
   } else {
     kup = kupdoj ? 300 : 250;
   }
 
 
-  // ---- PIT (Polski Ład 2022+) — metoda narastająca YTD ----
-  // Zaliczka miesięczna = podatek(YTD łącznie) − podatek(YTD bez tego miesiąca)
-  // Dzięki temu progi 30 000 i 120 000 zł stosują się dokładnie w właściwym miesiącu.
+  // ---- PIT (Polski Ład 2022+) — YTD cumulative method ----
+  // Monthly advance = tax(YTD incl. this month) − tax(YTD excl. this month)
+  // This ensures the 30,000 and 120,000 zł brackets are applied in exactly the right month.
 
 
   let pit = 0;
@@ -1332,7 +1332,7 @@ function calcMonth(brutto, monthIdx, cumulativeBrutto, cumPitBase, cumKupAutor, 
   const pitBase = Math.max(0, Math.round(brutto - ew_zus_social - kup));
 
   if (pit0) {
-    // Zerowy PIT — zwolnienie do 85 528 zł podstawy opodatkowania rocznie
+    // Zerowy PIT — exemption up to 85,528 zł of annual taxable base
     const exemptRemaining = Math.max(0, PIT0_LIMIT - cumPitBase);
     const taxableBase     = Math.max(0, pitBase - exemptRemaining);
 
@@ -1341,13 +1341,13 @@ function calcMonth(brutto, monthIdx, cumulativeBrutto, cumPitBase, cumKupAutor, 
       const usedBefore = cumPitBase;
       pitDebug = { exempt: true, pitBase, exemptRemaining, taxableBase: 0, usedBefore };
     } else {
-      // Часть или весь месяц сверх лимита zerowy PIT.
+      // Part or all of the month exceeds the Zerowy PIT limit.
       const ytdFull  = cumPitBase + pitBase;
       const prevFull = cumPitBase;
 
       let taxOnFull, taxOnPrev;
       if (joint) {
-        // Совместный PIT + zerowy: пропорциональная доля работника от совместного налога
+        // Joint PIT + Zerowy: employee's proportional share of combined tax
         const spouseYtd  = spouseIncome / 12 * (monthIdx + 1);
         const spousePrev = spouseIncome / 12 * monthIdx;
         const jointFull  = 2 * annualTaxScale((ytdFull  + spouseYtd)  / 2) - 2 * annualTaxScale((Math.min(ytdFull,  PIT0_LIMIT) + spouseYtd)  / 2);
@@ -1358,7 +1358,7 @@ function calcMonth(brutto, monthIdx, cumulativeBrutto, cumPitBase, cumKupAutor, 
         taxOnPrev = jointPrev * workerSharePrev;
         halfCombined = (ytdFull + spouseYtd) / 2;
       } else {
-        // Только zerowy: шкала к полному YTD минус шкала освобождённой части
+        // Zerowy only: scale on full YTD minus scale on exempt portion
         taxOnFull = annualTaxScale(ytdFull)  - annualTaxScale(Math.min(ytdFull,  PIT0_LIMIT));
         taxOnPrev = annualTaxScale(prevFull) - annualTaxScale(Math.min(prevFull, PIT0_LIMIT));
       }
@@ -1377,27 +1377,27 @@ function calcMonth(brutto, monthIdx, cumulativeBrutto, cumPitBase, cumKupAutor, 
     }
 
   } else {
-    // Стандартный расчёт нарастающим итогом
-    const ytdBase  = cumPitBase + pitBase; // база YTD включая этот месяц
-    const prevBase = cumPitBase;           // база YTD без этого месяца
+    // Standard YTD cumulative calculation
+    const ytdBase  = cumPitBase + pitBase; // YTD base including this month
+    const prevBase = cumPitBase;           // YTD base excluding this month
 
     let ytdTax, prevTax, halfCombined = null;
 
     if (joint) {
-      // Совместный PIT нарастающим итогом.
-      // Доход супруга равномерен — его YTD = spouseIncome / 12 * (monthIdx+1)
+      // Joint PIT cumulative YTD calculation.
+      // Spouse income is spread evenly — their YTD = spouseIncome / 12 * (monthIdx+1)
       const spouseYtd  = spouseIncome / 12 * (monthIdx + 1);
       const spousePrev = spouseIncome / 12 * monthIdx;
-      halfCombined     = (ytdBase + spouseYtd) / 2; // для отображения
-      // Полный совместный налог YTD
+      halfCombined     = (ytdBase + spouseYtd) / 2; // for display purposes
+      // Full joint YTD tax
       const ytdTaxJoint  = 2 * annualTaxScale((ytdBase  + spouseYtd)  / 2);
       const prevTaxJoint = 2 * annualTaxScale((prevBase + spousePrev) / 2);
-      // Работник платит пропорционально своей доле в суммарном доходе
+      // Employee pays proportionally to their share of combined income
       const workerShare = ytdBase > 0 ? ytdBase / (ytdBase + spouseYtd) : 0.5;
       ytdTax  = ytdTaxJoint  * workerShare;
       prevTax = prevTaxJoint * (prevBase > 0 ? prevBase / (prevBase + spousePrev) : 0.5);
     } else {
-      // Стандартный YTD: шкала применяется к нарастающей базе напрямую
+      // Standard YTD: scale applied directly to cumulative base
       ytdTax  = annualTaxScale(ytdBase);
       prevTax = annualTaxScale(prevBase);
     }
@@ -1409,16 +1409,16 @@ function calcMonth(brutto, monthIdx, cumulativeBrutto, cumPitBase, cumKupAutor, 
     pitDebug = {
       exempt: false,
       pitBase,
-      ytdBase,          // нарастающая база YTD вкл. этот месяц
-      prevBase,         // нарастающая база YTD без этого месяца
-      ytdTax,           // налог от YTD
-      prevTax,          // налог от prev YTD
-      taxThisMonth,     // налог за этот месяц = ytdTax − prevTax
+      ytdBase,          // YTD cumulative base incl. this month
+      prevBase,         // YTD cumulative base excl. this month
+      ytdTax,           // tax on YTD base
+      prevTax,          // tax on previous YTD base
+      taxThisMonth,     // tax for this month = ytdTax − prevTax
       monthlyTax: taxThisMonth,
       pit2reduction,
       halfCombined,
       pit,
-      // для совместимости с отображением шкалы
+      // for compatibility with bracket display
       annualBase: ytdBase,
       annualTax:  ytdTax,
     };
@@ -1446,7 +1446,7 @@ function calculate() {
   const inputVal = parseFloat(document.getElementById('salary-input').value) || 0;
   const wypRate = parseFloat(document.getElementById('wyp-rate').value) || 1.67;
   const ppk = getChecked('ppk');
-  const limitZUS = true; // лимит 282 600 zł применяется всегда
+  const limitZUS = true; // 282,600 zł limit always applies
   const pit0 = getChecked('pit0');
   const joint = getChecked('joint');
   const autor = getChecked('autor');
@@ -1470,7 +1470,7 @@ function calculate() {
   const months = [];
   let cumulative   = 0;
   let cumPitBase   = 0;
-  let cumKupAutor  = 0; // накопленный авторский KUP (лимит 120 000 zł/год)
+  let cumKupAutor  = 0; // accumulated author KUP (120,000 zł/yr limit)
   for (let i = 0; i < 12; i++) {
     const m = calcMonth(brutto, i, cumulative, cumPitBase, cumKupAutor, options);
     months.push(m);
@@ -1484,7 +1484,7 @@ function calculate() {
 
   const annBrutto    = sum('brutto');
   const annTotalCost = sum('totalCost');
-  const annPit       = sum('pit');       // сумма авансов (зависит от PIT-2)
+  const annPit       = sum('pit');       // sum of monthly advances (depends on PIT-2)
   const annEmpZUS    = sum('emp_total');
   const annEwZUS     = sum('ew_zus_social');
   const annEwHealth  = sum('ew_health');
@@ -1499,7 +1499,7 @@ function calculate() {
   const annEwChoro   = sum('ew_choro');
   const annEwPPK     = sum('ew_ppk');
 
-  // Итоговый годовой PIT (после декларации) — не зависит от PIT-2
+  // Final annual PIT (after tax return) — independent of PIT-2
   function calcAnnualPitFinal() {
     const totalPitBase = months.reduce((a, m) => a + (m.pitDebug?.pitBase ?? 0), 0);
 
@@ -1519,8 +1519,8 @@ function calculate() {
       return annualTaxScale(totalPitBase);
     }
   }
-  // PIT-2 уменьшает итоговый налог на 3600 zł (квота wolna применяется через авансы)
-  // но только если налога хватает (не уходим в минус)
+  // PIT-2 reduces the final tax by 3,600 zł (tax-free allowance applied via monthly advances)
+  // but only if there is enough tax (result cannot go below zero)
   const annPitFinal  = Math.max(0, calcAnnualPitFinal());
   const annNetto     = annBrutto - annEwZUS - annEwHealth - annPitFinal - annEwPPK;
 
@@ -1630,7 +1630,7 @@ function calculate() {
     </div>
   </div>`;
 
-  // Employee side — вынесено в функцию для реактивного обновления по месяцу
+  // Employee side — extracted to a function for reactive month updates
   function renderEmployeeBreakdown(midx) {
     const Mx = months[midx];
     const monthName = getMonths()[midx];
@@ -1682,7 +1682,7 @@ function calculate() {
 
   html += `</div>`;
 
-  // ---- PIT detail block — с выбором месяца ----
+  // ---- PIT detail block — with month selector ----
   window._calcMonths = months;
 
   function renderPitDetail(midx) {
@@ -1786,7 +1786,7 @@ function calculate() {
 
       const scaleBase = joint && pdx.halfCombined !== null ? pdx.halfCombined : pdx.ytdBase;
       const scalePrev = joint && pdx.halfCombined !== null
-        ? (pdx.ytdBase - pdx.pitBase + pdx.prevBase) / 2   // упрощение
+        ? (pdx.ytdBase - pdx.pitBase + pdx.prevBase) / 2   // approximation
         : pdx.prevBase;
 
       if (scaleBase <= 30000) {
