@@ -3,8 +3,13 @@
 // ═══════════════════════════════════════════════════════
 let mode = 'brutto';
 
-function getMonths() { return I18N[LANG].months; }
-function getMonthsShort() { return I18N[LANG].monthsShort; }
+function getMonths() {
+  return I18N[LANG].months;
+}
+
+function getMonthsShort() {
+  return I18N[LANG].monthsShort;
+}
 
 function setMode(m) {
   mode = m;
@@ -12,14 +17,13 @@ function setMode(m) {
   document.getElementById('btn-employer').classList.toggle('active', m === 'employer');
   const L2 = I18N[LANG];
   document.getElementById('input-label').textContent = (m === 'brutto') ? L2.inputLabelB : L2.inputLabelE;
-  document.getElementById('input-hint').textContent  = (m === 'brutto') ? L2.inputHintB  : L2.inputHintE;
+  document.getElementById('input-hint').textContent = (m === 'brutto') ? L2.inputHintB : L2.inputHintE;
   autoCalc();
 }
 
 function toggleCheck(id) {
   const cb = document.getElementById(id);
   const ci = document.getElementById('ci-' + id);
-  cb.checked = !cb.checked;
   ci.classList.toggle('checked', cb.checked);
 
   if (id === 'autor') {
@@ -32,6 +36,7 @@ function toggleCheck(id) {
 function fmt(n) {
   return n.toLocaleString('pl-PL', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' zł';
 }
+
 function fmtN(n) {
   return n.toLocaleString('pl-PL', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 }
@@ -75,36 +80,33 @@ function calculate() {
   const options = {pit0, joint, autor, autorPct, autorKupRate, kupdoj, pit2, ppk, limitZUS, wypRate, spouseIncome};
 
   const months = [];
-  let cumulative   = 0;
-  let cumPitBase   = 0;
-  let cumKupAutor  = 0; // accumulated author KUP (120,000 zł/yr limit)
+  let cumulative = 0;
+  let cumPitBase = 0;
+  let cumKupAutor = 0; // accumulated author KUP (120,000 zł/yr limit)
   for (let i = 0; i < 12; i++) {
     const m = calcMonth(brutto, i, cumulative, cumPitBase, cumKupAutor, options);
     months.push(m);
-    cumulative  += brutto;
-    cumPitBase  += m.pitDebug.pitBase ?? 0;
+    cumulative += brutto;
+    cumPitBase += m.pitDebug.pitBase ?? 0;
     cumKupAutor += m.kupAutorUsed;
   }
 
   // Annual sums
   const sum = (key) => months.reduce((a, m) => a + m[key], 0);
 
-  const annBrutto    = sum('brutto');
+  const annBrutto = sum('brutto');
   const annTotalCost = sum('totalCost');
-  const annPit       = sum('pit');       // sum of monthly advances (depends on PIT-2)
-  const annEmpZUS    = sum('emp_total');
-  const annEwZUS     = sum('ew_zus_social');
-  const annEwHealth  = sum('ew_health');
-  const annEmpEm     = sum('emp_em');
-  const annEmpRent   = sum('emp_rent');
-  const annEmpWyp    = sum('emp_wyp');
-  const annEmpFP     = sum('emp_fp');
-  const annEmpFGSP   = sum('emp_fgsp');
-  const annEmpPPK    = sum('emp_ppk');
-  const annEwEm      = sum('ew_em');
-  const annEwRent    = sum('ew_rent');
-  const annEwChoro   = sum('ew_choro');
-  const annEwPPK     = sum('ew_ppk');
+  const annPit = sum('pit');       // sum of monthly advances (depends on PIT-2)
+  const annEmpZUS = sum('emp_total');
+  const annEwZUS = sum('ew_zus_social');
+  const annEwHealth = sum('ew_health');
+  const annEmpEm = sum('emp_em');
+  const annEmpRent = sum('emp_rent');
+  const annEmpWyp = sum('emp_wyp');
+  const annEmpFP = sum('emp_fp');
+  const annEmpFGSP = sum('emp_fgsp');
+  const annEmpPPK = sum('emp_ppk');
+  const annEwPPK = sum('ew_ppk');
 
   // Final annual PIT (after tax return) — independent of PIT-2
   function calcAnnualPitFinal() {
@@ -113,7 +115,7 @@ function calculate() {
     if (pit0) {
       if (joint) {
         const jointTax = 2 * annualTaxScale((totalPitBase + spouseIncome) / 2)
-                       - 2 * annualTaxScale((Math.min(totalPitBase, 85528) + spouseIncome) / 2);
+            - 2 * annualTaxScale((Math.min(totalPitBase, 85528) + spouseIncome) / 2);
         const workerShare = totalPitBase / (totalPitBase + spouseIncome);
         return jointTax * workerShare;
       }
@@ -126,14 +128,15 @@ function calculate() {
       return annualTaxScale(totalPitBase);
     }
   }
+
   // PIT-2 reduces the final tax by 3,600 zł (tax-free allowance applied via monthly advances)
   // but only if there is enough tax (result cannot go below zero)
-  const annPitFinal  = Math.max(0, calcAnnualPitFinal());
-  const annNetto     = annBrutto - annEwZUS - annEwHealth - annPitFinal - annEwPPK;
+  const annPitFinal = Math.max(0, calcAnnualPitFinal());
+  const annNetto = annBrutto - annEwZUS - annEwHealth - annPitFinal - annEwPPK;
 
-  const effTaxRate            = annBrutto > 0 ? (annPitFinal / annBrutto * 100) : 0;
-  const effZusWorker          = annBrutto > 0 ? ((annEwZUS + annEwHealth) / annBrutto * 100) : 0;
-  const effWorkerTotal        = annBrutto > 0 ? ((annBrutto - annNetto) / annBrutto * 100) : 0;
+  const effTaxRate = annBrutto > 0 ? (annPitFinal / annBrutto * 100) : 0;
+  const effZusWorker = annBrutto > 0 ? ((annEwZUS + annEwHealth) / annBrutto * 100) : 0;
+  const effWorkerTotal = annBrutto > 0 ? ((annBrutto - annNetto) / annBrutto * 100) : 0;
   const totalDeductionsFromCost = annTotalCost > 0 ? ((annTotalCost - annNetto) / annTotalCost * 100) : 0;
 
   // Monthly reference (first month)
@@ -172,22 +175,22 @@ function calculate() {
     <div class="rate-bars">
       <div class="rate-bar-row">
         <div class="rate-bar-name">${t('effPit')}</div>
-        <div class="rate-bar-track"><div class="rate-bar-fill" style="width:${Math.min(effTaxRate,50)}%;background:var(--accent3)"></div></div>
+        <div class="rate-bar-track"><div class="rate-bar-fill" style="width:${Math.min(effTaxRate, 50)}%;background:var(--accent3)"></div></div>
         <div class="rate-bar-pct">${effTaxRate.toFixed(1)}%</div>
       </div>
       <div class="rate-bar-row">
         <div class="rate-bar-name">${t('effZus')}</div>
-        <div class="rate-bar-track"><div class="rate-bar-fill" style="width:${Math.min(effZusWorker,50)}%;background:var(--blue)"></div></div>
+        <div class="rate-bar-track"><div class="rate-bar-fill" style="width:${Math.min(effZusWorker, 50)}%;background:var(--blue)"></div></div>
         <div class="rate-bar-pct">${effZusWorker.toFixed(1)}%</div>
       </div>
       <div class="rate-bar-row">
         <div class="rate-bar-name">${t('effWorker')}</div>
-        <div class="rate-bar-track"><div class="rate-bar-fill" style="width:${Math.min(effWorkerTotal,60)}%;background:var(--orange)"></div></div>
+        <div class="rate-bar-track"><div class="rate-bar-fill" style="width:${Math.min(effWorkerTotal, 60)}%;background:var(--orange)"></div></div>
         <div class="rate-bar-pct">${effWorkerTotal.toFixed(1)}%</div>
       </div>
       <div class="rate-bar-row">
         <div class="rate-bar-name">${t('effTotal')}</div>
-        <div class="rate-bar-track"><div class="rate-bar-fill" style="width:${Math.min(totalDeductionsFromCost,70)}%;background:var(--accent)"></div></div>
+        <div class="rate-bar-track"><div class="rate-bar-fill" style="width:${Math.min(totalDeductionsFromCost, 70)}%;background:var(--accent)"></div></div>
         <div class="rate-bar-pct">${totalDeductionsFromCost.toFixed(1)}%</div>
       </div>
     </div>
@@ -293,13 +296,13 @@ function calculate() {
   window._calcMonths = months;
 
   function renderPitDetail(midx) {
-    const Mx  = months[midx];
+    const Mx = months[midx];
     const pdx = Mx.pitDebug;
     let h = '';
 
     if (pdx.exempt) {
       const usedBefore = Math.max(0, 85528 - pdx.exemptRemaining);
-      const usedAfter  = Math.min(85528, usedBefore + (pdx.pitBase || 0));
+      const usedAfter = Math.min(85528, usedBefore + (pdx.pitBase || 0));
       h += `<div class="breakdown-row">
         <span class="name" style="color:var(--green)">${t('pitZeroOk')}</span>
         <span class="val" style="color:var(--green)">0,00 zł</span>
@@ -392,10 +395,6 @@ function calculate() {
       </div>`;
 
       const scaleBase = joint && pdx.halfCombined !== null ? pdx.halfCombined : pdx.ytdBase;
-      const scalePrev = joint && pdx.halfCombined !== null
-        ? (pdx.ytdBase - pdx.pitBase + pdx.prevBase) / 2   // approximation
-        : pdx.prevBase;
-
       if (scaleBase <= 30000) {
         h += `<div class="breakdown-row">
           <span class="name">${t('pitFreeAll')}</span>
@@ -458,7 +457,7 @@ function calculate() {
   const monthTabsHtml = getMonthsShort().map((name, i) => {
     const mx = months[i];
     const hasEvent = mx.limitApplied || (mx.pitDebug && (mx.pitDebug.pit0limitExceeded));
-    const isFirst  = i === 0;
+    const isFirst = i === 0;
     return `<button
       onclick="selectPitMonth(${i})"
       id="pit-tab-${i}"
@@ -481,18 +480,18 @@ function calculate() {
     <div id="pit-detail-body">${renderPitDetail(0)}</div>
   </div>`;
 
-  window.selectPitMonth = function(idx) {
+  window.selectPitMonth = function (idx) {
     const ms = window._calcMonths;
     if (!ms) return;
     for (let i = 0; i < 12; i++) {
       const btn = document.getElementById('pit-tab-' + i);
       if (!btn) continue;
       btn.style.background = i === idx ? 'var(--accent3)' : 'var(--surface2)';
-      btn.style.color      = i === idx ? '#0e0f14'        : 'var(--text-dim)';
+      btn.style.color = i === idx ? '#0e0f14' : 'var(--text-dim)';
     }
     document.getElementById('employee-breakdown').innerHTML = renderEmployeeBreakdown(idx);
-    document.getElementById('pit-detail-body').innerHTML    = renderPitDetail(idx);
-    document.getElementById('pit-detail-val').textContent  = fmt(ms[idx].pit);
+    document.getElementById('pit-detail-body').innerHTML = renderPitDetail(idx);
+    document.getElementById('pit-detail-val').textContent = fmt(ms[idx].pit);
   };
 
 
@@ -517,7 +516,6 @@ function calculate() {
       </thead>
       <tbody>`;
 
-  let annCumBrutto = 0;
   months.forEach((m, i) => {
     const limitRow = m.limitApplied;
     html += `<tr${limitRow ? ' class="month-limit"' : ''}>
@@ -529,7 +527,6 @@ function calculate() {
       <td style="color:var(--accent);font-weight:600">${fmtN(m.netto)}</td>
       <td style="color:var(--purple)">${fmtN(m.totalCost)}</td>
     </tr>`;
-    annCumBrutto += m.brutto;
   });
 
   html += `</tbody>
@@ -586,9 +583,9 @@ function calculate() {
 
   // Notes
   let notes = [];
-  if (pit0) notes.push(t('noteZerowy')({pit0, spouseFmt:fmt(spouseIncome)}));
-  if (joint) notes.push(t('noteJoint')({spouseFmt:fmt(spouseIncome), pit0}));
-  if (autor) notes.push(t('noteAutor')({kupPct:Math.round(autorKupRate*100), autorPct}));
+  if (pit0) notes.push(t('noteZerowy')({pit0, spouseFmt: fmt(spouseIncome)}));
+  if (joint) notes.push(t('noteJoint')({spouseFmt: fmt(spouseIncome), pit0}));
+  if (autor) notes.push(t('noteAutor')({kupPct: Math.round(autorKupRate * 100), autorPct}));
   if (ppk) notes.push(t('notePpk')({}));
   notes.push(t('noteZusLimit')({}));
   notes.push(t('noteDisclaimer')({}));

@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kalkulator Wynagrodzeń 2026</title>
-<link rel="icon" type="image/svg+xml" sizes="any" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧮</text></svg>">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalkulator Wynagrodzeń 2026</title>
+  <link rel="icon" type="image/svg+xml" sizes="any"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧮</text></svg>">
+  <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap"
+      rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
@@ -16,12 +19,12 @@
     <h1>Kalkulator<br>Wynagrodzeń <span>UoP</span></h1>
   </div>
   <div>
-    <div class="header-sub" id="header-sub">Умова о праце · ZUS + PIT · Полный расчёт</div>
+    <div class="header-sub" id="header-sub">Employment contract · ZUS + PIT · Full breakdown</div>
   </div>
   <div class="lang-switcher">
     <button class="lang-btn active" onclick="setLang('EN')">EN</button>
-    <button class="lang-btn"        onclick="setLang('PL')">PL</button>
-    <button class="lang-btn"        onclick="setLang('RU')">RU</button>
+    <button class="lang-btn" onclick="setLang('PL')">PL</button>
+    <button class="lang-btn" onclick="setLang('RU')">RU</button>
   </div>
 </div>
 
@@ -30,64 +33,69 @@
   <!-- LEFT: INPUTS -->
   <div>
     <div class="panel panel-mb">
-      <div class="panel-title" id="pt-mode">Режим ввода</div>
+      <div class="panel-title" id="pt-mode">Input mode</div>
       <div class="panel-body">
         <div class="mode-toggle">
-          <button class="mode-btn active" id="btn-brutto" onclick="setMode('brutto')" data-i18n="modeBrutto">Брутто работника</button>
-          <button class="mode-btn" id="btn-employer" onclick="setMode('employer')" data-i18n="modeEmployer">Полная стоимость найма</button>
+          <button class="mode-btn active" id="btn-brutto" onclick="setMode('brutto')" data-i18n="modeBrutto">
+            Employee gross
+          </button>
+          <button class="mode-btn" id="btn-employer" onclick="setMode('employer')" data-i18n="modeEmployer">
+            Total employment cost
+          </button>
         </div>
 
         <div class="field">
-          <label id="input-label">Зарплата брутто (месяц)</label>
+          <label id="input-label" for="salary-input">Gross salary (monthly)</label>
           <div class="field-row">
             <input type="number" id="salary-input" value="6000" min="0" step="100" oninput="autoCalc()">
             <span class="field-unit">zł</span>
           </div>
-          <div class="field-hint" id="input-hint">Сумма, указанная в трудовом договоре</div>
+          <div class="field-hint" id="input-hint">Amount stated in the employment contract</div>
         </div>
       </div>
     </div>
 
     <div class="panel">
-      <div class="panel-title" id="pt-options">Льготы и параметры</div>
+      <div class="panel-title" id="pt-options">Benefits & parameters</div>
       <div class="panel-body">
 
-        <div class="section-label" id="sl-pit">Налоговые льготы (PIT)</div>
+        <div class="section-label" id="sl-pit">Tax reliefs (PIT)</div>
         <div class="check-group">
 
-          <label class="check-item" id="ci-pit0" onclick="toggleCheck('pit0')">
-            <input type="checkbox" id="pit0">
-            <div class="check-box"></div>
-            <div class="check-text">
-              <div class="check-name" id="cn-pit0">Zerowy PIT — до 26 лет</div>
-              <div class="check-desc" id="cd-pit0">Освобождение от PIT при доходе до 85 528 zł/год</div>
-            </div>
+          <label class="check-item" id="ci-pit0">
+            <input type="checkbox" id="pit0" onchange="toggleCheck('pit0')">
+            <span class="check-box"></span>
+            <span class="check-text">
+              <span class="check-name" id="cn-pit0">Zerowy PIT — under 26</span>
+              <span class="check-desc" id="cd-pit0">PIT exemption for income up to 85,528 zł/year</span>
+            </span>
           </label>
 
-          <label class="check-item" id="ci-joint" onclick="toggleCheck('joint')">
-            <input type="checkbox" id="joint">
-            <div class="check-box"></div>
-            <div class="check-text">
-              <div class="check-name" id="cn-joint">Совместный PIT с супругом/супругой</div>
-              <div class="check-desc" id="cd-joint">Применяется 1-й порог (12%) дольше за счёт усреднения дохода</div>
-            </div>
+          <label class="check-item" id="ci-joint">
+            <input type="checkbox" id="joint" onchange="toggleCheck('joint')">
+            <span class="check-box"></span>
+            <span class="check-text">
+              <span class="check-name" id="cn-joint">Joint PIT with spouse</span>
+              <span class="check-desc" id="cd-joint">Lower 12% bracket applies longer due to income averaging</span>
+            </span>
           </label>
 
-          <label class="check-item" id="ci-autor" onclick="toggleCheck('autor')">
-            <input type="checkbox" id="autor">
-            <div class="check-box"></div>
-            <div class="check-text">
-              <div class="check-name" id="cn-autor">Авторские расходы (honorarium autorskie)</div>
-              <div class="check-desc" id="cd-autor">KUP % от авторской части вместо стандартных 250 zł/мес (лимит 120 000 zł/год)</div>
-            </div>
+          <label class="check-item" id="ci-autor">
+            <input type="checkbox" id="autor" onchange="toggleCheck('autor')">
+            <span class="check-box"></span>
+            <span class="check-text">
+              <span class="check-name" id="cn-autor">Author's expenses (honorarium autorskie)</span>
+              <span class="check-desc" id="cd-autor">KUP % of author's part instead of standard 250 zł/mo (limit 120,000 zł/yr)</span>
+            </span>
           </label>
 
           <div class="subfield" id="sf-autor">
             <div class="autor-subfield-row">
               <div>
-                <label id="lbl-kuprate">Ставка KUP от авторской части (%)</label>
+                <label id="lbl-kuprate" for="autor-kup-rate">KUP rate on author's part (%)</label>
                 <div class="autor-input-row">
-                  <input type="number" id="autor-kup-rate" value="50" min="1" max="100" step="1" oninput="autoCalc()">
+                  <input type="number" id="autor-kup-rate" value="50" min="1" max="100" step="1"
+                         oninput="autoCalc()">
                   <div class="autor-rate-btns">
                     <button onclick="setAutorRate(20)" class="autor-rate-btn">20%</button>
                     <button onclick="setAutorRate(50)" class="autor-rate-btn">50%</button>
@@ -95,75 +103,76 @@
                 </div>
               </div>
               <div>
-                <label id="lbl-autorpct">Доля авторской части от брутто (%)</label>
+                <label id="lbl-autorpct" for="autor-pct">Author's share of gross (%)</label>
                 <input type="number" id="autor-pct" value="100" min="1" max="100" oninput="autoCalc()">
               </div>
             </div>
           </div>
 
-          <label class="check-item" id="ci-kupdoj" onclick="toggleCheck('kupdoj')">
-            <input type="checkbox" id="kupdoj">
-            <div class="check-box"></div>
-            <div class="check-text">
-              <div class="check-name" id="cn-kupdoj">Повышенные расходы (доп. место работы)</div>
-              <div class="check-desc" id="cd-kupdoj">KUP = 300 zł/мес вместо 250 zł (другой населённый пункт)</div>
-            </div>
+          <label class="check-item" id="ci-kupdoj">
+            <input type="checkbox" id="kupdoj" onchange="toggleCheck('kupdoj')">
+            <span class="check-box"></span>
+            <span class="check-text">
+              <span class="check-name" id="cn-kupdoj">Increased costs (additional workplace)</span>
+              <span class="check-desc" id="cd-kupdoj">KUP = 300 zł/mo instead of 250 zł (different locality)</span>
+            </span>
           </label>
 
-          <label class="check-item" id="ci-pit2" onclick="toggleCheck('pit2')">
-            <input type="checkbox" id="pit2">
-            <div class="check-box"></div>
-            <div class="check-text">
-              <div class="check-name" id="cn-pit2">Залог PIT-2 (квота свободная от налога)</div>
-              <div class="check-desc" id="cd-pit2">Квота 30 000 zł/год учитывается в авансах ежемесячно (−300 zł/мес), а не только в годовой декларации</div>
-            </div>
+          <label class="check-item" id="ci-pit2">
+            <input type="checkbox" id="pit2" onchange="toggleCheck('pit2')">
+            <span class="check-box"></span>
+            <span class="check-text">
+              <span class="check-name" id="cn-pit2">PIT-2 declaration (tax-free allowance)</span>
+              <span class="check-desc"
+                    id="cd-pit2">30,000 zł/yr allowance applied monthly in advances (−300 zł/mo)</span>
+            </span>
           </label>
-
         </div>
 
-        <div class="section-label" id="sl-params">Параметры</div>
+        <div class="section-label" id="sl-params">Parameters</div>
 
         <div class="check-group">
-          <label class="check-item" id="ci-ppk" onclick="toggleCheck('ppk')">
-            <input type="checkbox" id="ppk">
-            <div class="check-box"></div>
-            <div class="check-text">
-              <div class="check-name" id="cn-ppk">Участие в PPK</div>
-              <div class="check-desc" id="cd-ppk">Работодатель +1,5%, работник +2% от брутто</div>
-            </div>
+          <label class="check-item" id="ci-ppk">
+            <input type="checkbox" id="ppk" onchange="toggleCheck('ppk')">
+            <span class="check-box"></span>
+            <span class="check-text">
+              <span class="check-name" id="cn-ppk">PPK participation</span>
+              <span class="check-desc" id="cd-ppk">Employer +1.5%, employee +2% of gross</span>
+            </span>
           </label>
         </div>
 
         <div class="field">
-          <label id="lbl-wyp">Ставка несчастного страхования (wypadkowe)</label>
+          <label id="lbl-wyp" for="wyp-rate">Accident insurance rate (wypadkowe)</label>
           <div class="field-row">
-            <input type="number" id="wyp-rate" value="1.67" min="0.67" max="3.33" step="0.01" oninput="autoCalc()">
+            <input type="number" id="wyp-rate" value="1.67" min="0.67" max="3.33" step="0.01"
+                   oninput="autoCalc()">
             <span class="field-unit">%</span>
           </div>
-          <div class="field-hint" id="hint-wyp">Стандарт: 1,67%. Зависит от отрасли и размера фирмы</div>
+          <div class="field-hint" id="hint-wyp">Standard: 1.67%. Depends on industry and company size</div>
         </div>
 
         <div class="field">
-          <label id="lbl-spouse">Доход супруга/супруги (год, для совм. PIT)</label>
+          <label id="lbl-spouse" for="spouse-income">Spouse income (annual, for joint PIT)</label>
           <div class="field-row">
             <input type="number" id="spouse-income" value="0" min="0" step="1000" oninput="autoCalc()">
             <span class="field-unit">zł</span>
           </div>
-          <div class="field-hint" id="spouse-hint">Заполните при выборе совместного PIT</div>
+          <div class="field-hint" id="spouse-hint">Fill in when joint PIT is selected</div>
         </div>
 
-        <button class="calc-btn" onclick="calculate()" id="calc-btn">⟶ Рассчитать</button>
+        <button class="calc-btn" onclick="calculate()" id="calc-btn">⟶ Calculate</button>
       </div>
     </div>
   </div>
 
   <!-- RIGHT: RESULTS -->
   <div id="results-panel" class="panel results-scroll">
-    <div class="panel-title" id="pt-results">Результаты расчёта</div>
+    <div class="panel-title" id="pt-results">Calculation results</div>
     <div class="panel-body" id="results-body">
       <div class="results-placeholder">
         <div class="placeholder-icon">⟶</div>
-        <div id="placeholder-text">Введите зарплату и нажмите<br>«Рассчитать»</div>
+        <div id="placeholder-text">Enter salary and click<br>"Calculate"</div>
       </div>
     </div>
   </div>
